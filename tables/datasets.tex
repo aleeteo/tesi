@@ -1,0 +1,21 @@
+\begin{table}[ht]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lllllllllll}
+\toprule
+Nome & Tipo scena & Illuminazione & Tipo ground truth & Formato immagine & Camere & n. Immagini & Risoluzione & Annotazioni extra & Disponibilità & Reference \\
+\midrule
+Color Checker (Gehler-Shi) & indoor+outdoor & single & Macbeth ColorChecker & RAW+TIFF & Canon 1D; Canon 5D & 568 & 3504x2336 / 4368x2912 & illuminante RGB, WB multipliers, pos chart & pubblico & \cite{gehler_bayesian_2008} \\
+Cube++ & indoor+outdoor & single & Macbeth ColorChecker & RAW+sRGB & Canon EOS 550D & 1365 & 5184x3456 & bounding box chart, illuminante RGB, sRGB preview & pubblico (MIT) & \cite{ershov_cube_2020} \\
+INTEL-TAU & indoor+outdoor & single & image RAW associata con ColorChecker & TIFF (16bit RAW) & Canon 5DSR; Nikon D810; Sony IMX135 & 7022 & 8896x5920 / 7380x4928 / 3264x2448 & GT RGB, GDPR-masked, color shading info, spettro sensore/luci & pubblico & \cite{laakom_intel-tau_2020} \\
+NUS 8-Camera & indoor+outdoor & single & Macbeth ColorChecker & RAW & Canon1; Canon2; Fuji; Nikon; Oly; Pan; Sam; Sony & 1736 & variabile & stesse scene per tutte le camere, GT RGB, confronto cross-camera & pubblico & \cite{cheng_illuminant_2014} \\
+\hline \\
+Beigpour Multi-Illuminant & indoor (lab) & multi & per-pixel (reflectance. shading. illuminant. specular) & RAW+sRGB & Nikon D300 + Kinect v2 & ~1500 & 4288x2848 + VGA & GT completo per-pixel, depth sparsa, spettro sorgenti & pubblico & \cite{beigpour_multi-illuminant_2013:} \\
+SFU Gray Sphere & indoor+outdoor & multi & gray sphere in frame & JPEG/PNG & Sony VX-2000 & 11000 & ~720x480 & dominant+secondary illuminant RGB, chromaticity rg, scene distribuzioni & pubblico & \cite{aghaei_flying_2020} \\
+LSMI & indoor & multi & per-pixel via illuminant mixing & RAW & Note20 Ultra; $\alpha$9; D810 & 7486 & variabile & per-pixel GT, mappe miscelazione, ColorChecker, relighting & pubblico & \cite{kim_large_2021} \\
+Flying Gray Ball & indoor & multi & per-pixel (sparso. da gray ball) & RAW+TIFF+JPG & Canon 5D Mk II & 1300 & 5616x3744 & coordinate ball, RGB locale, segmentazione, metadati luce & pubblico & \cite{ciurea_large_2003} \\
+\bottomrule
+\end{tabular}
+}
+\label{tab:datasets}
+\end{table}
