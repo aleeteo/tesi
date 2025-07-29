@@ -1,0 +1,98 @@
+\documentclass[aspectratio=169]{beamer}
+\usetheme{moloch}           % Use metropolis theme
+
+\input{preamble.tex} % Load custom preamble with packages and settings
+
+\title{AWB algorithms and dataset comparison}
+\date{\today}
+\author{Alessandro Teodori}
+% \institute{Centre for Modern Beamer Themes}
+\begin{document}
+  \maketitle
+  \section{AWB algorithms}
+    \begin{frame}
+      \input{tables/algorithms.tex}
+    \end{frame}
+  \section{Datasets}
+    \begin{frame}
+      \input{tables/datasets.tex}
+    \end{frame}
+    
+    \begin{frame}
+    \frametitle{beigpour multi-illuminant}
+      
+      \begin{figure}[h]
+        \centering
+        \includegraphics[width=0.5\textwidth]{img/beigpour-dataset-sample.png}
+        \caption{esempi di immagini del dataset Beigpour Multi-Illuminant.}
+        \label{fig:beigpour-dataset-sample}
+      \end{figure}
+    \end{frame}
+
+    \begin{frame}
+      \frametitle{sfu gray sphere}
+
+      \begin{figure}[h]
+        \centering
+        \includegraphics[width=0.4\textwidth]{img/sfu-dataset-sample.png}
+        \caption{esempi di immagini del dataset SFU Gray Sphere.}
+        \label{fig:sfu-dataset-sample}
+      \end{figure}
+    \end{frame}
+
+    \begin{frame}
+      \frametitle{sfu gray sphere drone}
+      \begin{figure}[h]
+        \centering
+        \includegraphics[width=0.6\textwidth]{img/sfu-drone.png}
+        \caption{drone utilizzato per acquisire le immagini del dataset SFU Gray Sphere.}
+        \label{fig:sfu-drone}
+      \end{figure}
+    \end{frame}
+
+    \begin{frame}
+      \frametitle{LSMI}
+
+      \begin{figure}[h]
+        \centering
+        \includegraphics[width=0.3\textwidth]{img/lsmi-dataset-sample.png}
+        \caption{esempi di immagini del dataset LSMI. Le immagini sono state acquisite con diversi dispositivi e mostrano scene con illuminazione variabile.}
+        \label{fig:lsmi-dataset-sample}
+      \end{figure}
+    \end{frame}
+
+     \begin{frame}
+       \frametitle{Flying Gray Ball}
+
+        \begin{figure}[h]
+          \centering
+          \includegraphics[width=0.6\textwidth]{img/flying-ball-dataset-sample.png}
+          \caption{esempio di immagine del dataset Flying Gray Ball}
+          \label{fig:flying-ball-dataset-sample}
+        \end{figure}
+
+    \end{frame}
+    %
+    % \begin{frame}
+    %   \frametitle{colorchecker}
+    %   \begin{itemize}
+    %     \item<1-> scene sia in interno che in esterno
+    %     \item<2-> un singolo illuminante globale
+    %     \item<3-> ground truth: Macbeth ColorChecker + posizione gliglia grigia per ogni immagine
+    %   \end{itemize}
+    % \end{frame}
+    %
+    % \begin{frame}
+    %   \frametitle{cube++}
+    %   \begin{itemize}
+    %     \item<1-> scene in esterno
+    %     \item<2-> un singolo illuminante globale
+    %     \item<3-> ground truth: Macbeth ColorChecker + bounding box della griglia
+    %   \end{itemize}
+    % \end{frame}
+    %
+  \section{References}
+    \begin{frame}[allowframebreaks]
+      \printbibliography
+    \end{frame}
+\end{document}
