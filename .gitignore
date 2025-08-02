@@ -3,5 +3,5 @@ build/*
 __pycache__/
 *.pyc
 
-*ken_burns_output.mp4
+*.mp4
 LSMI-dataset/
