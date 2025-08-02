@@ -1,7 +1,7 @@
 import cv2
 import math
 import noise
-import numpy as np
+# import numpy as np
 
 
 def ken_burns_effect(
@@ -32,7 +32,7 @@ def ken_burns_effect(
     h, w, _ = img.shape
     total_frames = video_fps * video_duration
 
-    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+    fourcc = cv2.VideoWriter_fourcc(*"mp4v")  # type: ignore
     out = cv2.VideoWriter(output_video, fourcc, video_fps, video_size)
 
     for i in range(total_frames):
@@ -101,7 +101,7 @@ def ken_burns_custom_pan(
     h, w, _ = img.shape
     total_frames = video_fps * video_duration
 
-    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+    fourcc = cv2.VideoWriter_fourcc(*"mp4v")  # type: ignore
     out = cv2.VideoWriter(output_video, fourcc, video_fps, video_size)
 
     for i in range(total_frames):
@@ -178,7 +178,10 @@ def ken_burns_advanced(
 
     total_frames = int(video_fps * video_duration)
     out = cv2.VideoWriter(
-        output_video, cv2.VideoWriter_fourcc(*"mp4v"), video_fps, video_size
+        output_video,
+        cv2.VideoWriter_fourcc(*"mp4v"),  # type: ignore
+        video_fps,
+        video_size,  # type: ignore
     )
 
     for i in range(total_frames):
@@ -223,11 +226,13 @@ if __name__ == "__main__":
         input_image=input_path,
         output_video=output_path,
         start_point=(0.1, 0.1),
-        end_point=(0.9, 0.9),
-        start_zoom=1.5,
-        end_zoom=2,
+        end_point=(0.8, 0.8),
+        start_zoom=2,
+        end_zoom=2.5,
         interp_pan="linear",
         interp_zoom="ease_in_out",
+        noise_strength=0.8,
+        noise_speed=0.2,
     )
 
     # --- Riproduzione automatica del video ---
