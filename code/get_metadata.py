@@ -1,13 +1,10 @@
 import json
 
 
-def get_centroids(image_name: str, json_file_path: str = "sony_meta.json"):
-    with open(json_file_path, "r") as f:
-        data = json.load(f)
-
+def get_centroids(meta: dict) -> list:
     centroids = []
 
-    for mcc, coords in data[image_name]["MCCCoord"].items():
+    for mcc, coords in meta["MCCCoord"].items():
         # Separiamo le coordinate x e y
         xs = [p[0] for p in coords]
         ys = [p[1] for p in coords]
@@ -16,11 +13,17 @@ def get_centroids(image_name: str, json_file_path: str = "sony_meta.json"):
         cx = sum(xs) / len(xs)
         cy = sum(ys) / len(ys)
 
-        centroids.append((mcc, (cx, cy)))
+        centroids.append((cx, cy))
 
-    for mcc, centroide in centroids:
-        print(f"{mcc}: centroide = {centroide}")
+    return centroids
 
 
 if __name__ == "__main__":
-    get_centroids("Place925.jpg", "sony_meta.json")
+    with open(
+        "/Users/alessandroteodori/stage/code/LSMI-dataset/nikon/meta.json", "r"
+    ) as f:
+        data = json.load(f)
+    meta = data["Place0"]
+
+    gen = get_centroids(meta)
+    print("Centroids:", gen)
