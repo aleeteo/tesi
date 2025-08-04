@@ -5,20 +5,61 @@ from typing import Optional
 from perlin_noise import PerlinNoise
 
 
-def write_video(frames: np.ndarray, output_path: str, fps: int):
-    """Scrive un video (array 4D NumPy) su file."""
+# =========================
+# UTILITÀ DI SALVATAGGIO
+# =========================
+def save_video(frames: np.ndarray, output_path: str, fps: int, format: str = "mp4"):
+    """
+    Salva un video come file MJPEG, MP4 o NPY.
+    """
     if frames.ndim != 4:
         raise ValueError("Il video deve essere un array 4D di forma (N, H, W, C).")
 
-    n_frames, h, w, _ = frames.shape
-    fourcc = cv2.VideoWriter_fourcc(*"mp4v")  # type: ignore
-    out = cv2.VideoWriter(output_path, fourcc, fps, (w, h))
+    if format == "npy":
+        if not output_path.endswith(".npy"):
+            output_path += ".npy"
+        np.save(output_path, frames)
+        print(f"✅ Video salvato come array NumPy: {output_path}")
+        return
 
+    n_frames, h, w, _ = frames.shape
+    if format == "mjpeg":
+        fourcc = cv2.VideoWriter_fourcc(*"MJPG")  # type: ignore
+        if not output_path.endswith(".avi"):
+            output_path += ".avi"
+    elif format == "mp4":
+        fourcc = cv2.VideoWriter_fourcc(*"mp4v")  # type: ignore
+        if not output_path.endswith(".mp4"):
+            output_path += ".mp4"
+    else:
+        raise ValueError("Formato non supportato. Usa 'mjpeg', 'mp4' o 'npy'.")
+
+    out = cv2.VideoWriter(output_path, fourcc, fps, (w, h))
     for i in range(n_frames):
         out.write(frames[i])
     out.release()
+    print(f"✅ Video salvato: {output_path}")
 
 
+def load_video_npy(path: str) -> np.ndarray:
+    """
+    Carica un video salvato come array NumPy (NPY).
+    """
+    return np.load(path)
+
+
+def play_video_from_array(frames: np.ndarray, fps: int = 30, linear: bool = True):
+    """Riproduce un video da un array 4D (N, H, W, C)."""
+    for frame in frames:
+        cv2.imshow("Video", frame)
+        if cv2.waitKey(int(1000 / fps)) & 0xFF == ord("q"):
+            break
+    cv2.destroyAllWindows()
+
+
+# =========================
+# FUNZIONI DI GENERAZIONE
+# =========================
 def ken_burns_simple_array(
     image: np.ndarray,
     video_fps: int = 30,
@@ -28,18 +69,14 @@ def ken_burns_simple_array(
     start_zoom: float = 1.0,
     end_zoom: float = 1.2,
     video_size: tuple = (1280, 720),
-    output_path: Optional[str] = None,
 ) -> np.ndarray:
-    """
-    Effetto Ken Burns semplice: pan lineare + zoom lineare.
-    Restituisce un array 4D di forma (N, H, W, C).
-    """
+    """Effetto Ken Burns semplice: pan lineare + zoom lineare. Restituisce (N, H, W, C)."""
     H, W, _ = image.shape
     total_frames = int(video_fps * video_duration)
     frames = np.zeros((total_frames, video_size[1], video_size[0], 3), dtype=np.uint8)
 
     for i in range(total_frames):
-        t = i / (total_frames - 1)  # Interpolazione lineare
+        t = i / (total_frames - 1)
         cx = (start_point[0] + t * (end_point[0] - start_point[0])) * W
         cy = (start_point[1] + t * (end_point[1] - start_point[1])) * H
         zoom = start_zoom + t * (end_zoom - start_zoom)
@@ -51,9 +88,6 @@ def ken_burns_simple_array(
 
         crop = image[y_offset : y_offset + crop_h, x_offset : x_offset + crop_w]
         frames[i] = cv2.resize(crop, video_size)
-
-    if output_path:
-        write_video(frames, output_path, video_fps)
 
     return frames
 
@@ -72,14 +106,9 @@ def ken_burns_advanced_array(
     noise_strength: float = 0.0,
     noise_speed: float = 0.5,
     noise_seed: Optional[int] = None,
-    output_path: Optional[str] = None,
 ) -> np.ndarray:
-    """
-    Effetto Ken Burns avanzato con interpolazioni e rumore Perlin deterministico.
-    Restituisce un array 4D di forma (N, H, W, C).
-    """
+    """Effetto Ken Burns avanzato con interpolazioni e rumore Perlin deterministico. Restituisce (N, H, W, C)."""
 
-    # Interpolazioni
     def linear(t):
         return t
 
@@ -138,24 +167,16 @@ def ken_burns_advanced_array(
         crop = image[y_offset : y_offset + crop_h, x_offset : x_offset + crop_w]
         frames[i] = cv2.resize(crop, video_size)
 
-    if output_path:
-        write_video(frames, output_path, video_fps)
-
     return frames
 
 
-def play_video_from_array(frames: np.ndarray, fps: int = 30):
-    """Riproduce un video da un array 4D (N, H, W, C)."""
-    for frame in frames:
-        cv2.imshow("Video", frame)
-        if cv2.waitKey(int(1000 / fps)) & 0xFF == ord("q"):
-            break
-    cv2.destroyAllWindows()
-
-
+# =========================
+# ESEMPIO DI UTILIZZO
+# =========================
 if __name__ == "__main__":
     img = cv2.imread("Place925.jpg")
 
+    # Genera il video (solo in memoria come array NumPy 4D)
     video_frames = ken_burns_advanced_array(
         image=img,
         start_point=(0.1, 0.1),
@@ -167,9 +188,10 @@ if __name__ == "__main__":
         noise_strength=0.8,
         noise_speed=0.2,
         noise_seed=42,
-        output_path="ken_burns_output.mp4",
     )
 
-    print(video_frames.shape)  # -> (N, H, W, C)
-    play_video_from_array(video_frames, fps=30)
+    # Salvataggio separato
+    # save_video(video_frames, "ken_burns_output", fps=30, format="mp4")
 
+    # Riproduzione
+    play_video_from_array(video_frames, fps=30)
