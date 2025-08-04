@@ -1,11 +1,9 @@
 import cv2
 import numpy as np
-import os
-from typing import Union
 
 
 def linear_tiff_to_srgb(
-    img: Union[str, np.ndarray],
+    img: np.ndarray,
     apply_auto_wb: bool = True,
     wb_strength: float = 1.0,
     exposure: float = 1.0,
@@ -13,31 +11,18 @@ def linear_tiff_to_srgb(
 ) -> np.ndarray:
     """
     Converte un'immagine LSMI (16-bit lineare) in sRGB per visualizzazione.
-    Accetta sia un percorso file (.tiff) che un array numpy.
 
     Parametri:
-        img (str | np.ndarray): Path TIFF o immagine numpy già caricata.
+        img (np.ndarray): Immagine in input (16-bit lineare).
         apply_auto_wb (bool): Applica auto white balance per canale.
         wb_strength (float): Intensità del white balance (0=off, 1=full).
         exposure (float): Fattore di esposizione globale.
-        clip (bool): Se True, clippa i valori a [0,1] prima di convertire.
+        clip (bool): Se True, clippa i valori a [0,1].
 
     Ritorna:
         np.ndarray: Immagine in sRGB uint8 (H,W,3).
     """
-    # Se è un path, carica il file
-    if isinstance(img, str):
-        if not os.path.exists(img):
-            raise FileNotFoundError(f"File non trovato: {os.path.abspath(img)}")
-        img = cv2.imread(img, cv2.IMREAD_UNCHANGED)
-        if img is None:
-            raise ValueError(f"Impossibile leggere il TIFF: {os.path.abspath(img)}")
-
-    if not isinstance(img, np.ndarray):
-        raise TypeError("Input deve essere un np.ndarray o un path valido a un TIFF")
-
-    if img.dtype != np.float32:
-        img = img.astype(np.float32)
+    img = img.astype(np.float32)
 
     # Normalizza in base alla profondità a 16 bit (se necessario)
     if img.max() > 1.0:
@@ -64,28 +49,14 @@ def linear_tiff_to_srgb(
     return (img_srgb * 255).astype(np.uint8)
 
 
-def visualize_image(img: np.ndarray, title: str = "Immagine"):
-    """Mostra a schermo un'immagine numpy già convertita in sRGB."""
-    if img.dtype != np.uint8:
-        raise ValueError(
-            "L'immagine deve essere in formato uint8 per la visualizzazione."
-        )
-    cv2.imshow(title, img)
+if __name__ == "__main__":
+    # Esempio d'uso:
+    img = cv2.imread(
+        "/Users/alessandroteodori/stage/code/LSMI-dataset/nikon_processed/Place954/Place954_123.tiff",
+        cv2.IMREAD_UNCHANGED,
+    )
+    img_srgb = linear_tiff_to_srgb(img)
+    cv2.imshow("TIFF LSMI", img_srgb)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-
-if __name__ == "__main__":
-    # Esempio 1: Caricamento da file TIFF
-    img_srgb = linear_tiff_to_srgb(
-        "/Users/alessandroteodori/stage/code/LSMI-dataset/nikon/Place954/Place954_123.tiff"
-    )
-    visualize_image(img_srgb, "Da file TIFF")
-
-    # Esempio 2: Input come array numpy (già in memoria)
-    img_array = cv2.imread(
-        "/Users/alessandroteodori/stage/code/LSMI-dataset/nikon/Place954/Place954_123.tiff",
-        cv2.IMREAD_UNCHANGED,
-    )
-    img_srgb_from_array = linear_tiff_to_srgb(img_array)
-    visualize_image(img_srgb_from_array, "Da array numpy")
