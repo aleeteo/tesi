@@ -3,8 +3,10 @@ import numpy as np
 import os
 
 
+# TODO: input np.ndarray (immagine gia' caricata da file)
+# TODO: output tipizzato
 def linear_tiff_to_srgb(
-    tiff_path, apply_auto_wb=True, wb_strength=1, exposure=0.5, clip=True
+    tiff_path, apply_auto_wb=True, wb_strength=1, exposure=1, clip=True
 ):
     """
     Legge un TIFF LSMI a 16 bit lineare e lo converte in sRGB per visualizzazione.
@@ -43,12 +45,7 @@ def linear_tiff_to_srgb(
 
 
 def visualize_tiff(tiff_path):
-    img_srgb = linear_tiff_to_srgb(
-        tiff_path,
-        apply_auto_wb=True,
-        wb_strength=1,
-        exposure=0.5,  # leggermente più scuro
-    )
+    img_srgb = linear_tiff_to_srgb(tiff_path)
     cv2.imshow(f"TIFF LSMI - {os.path.basename(tiff_path)}", img_srgb)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
