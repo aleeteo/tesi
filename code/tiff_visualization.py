@@ -54,8 +54,8 @@ def visualize_tiff(tiff_path):
     cv2.destroyAllWindows()
 
 
-# ESEMPIO:
-visualize_tiff(
-    "/Users/alessandroteodori/Documents/stage/code/LSMI-dataset/nikon_processed/Place954/Place954_123.tiff"
-)
-
+if __name__ == "__main__":
+    # ESEMPIO:
+    visualize_tiff(
+        "/Users/alessandroteodori/Documents/stage/code/LSMI-dataset/nikon_processed/Place954/Place954_123.tiff"
+    )
