@@ -4,6 +4,8 @@ import math
 from typing import Optional
 from perlin_noise import PerlinNoise
 
+import my_utils as u
+
 
 # =========================
 # UTILITÀ DI SALVATAGGIO
@@ -48,9 +50,11 @@ def load_video_npy(path: str) -> np.ndarray:
     return np.load(path)
 
 
-def play_video_from_array(frames: np.ndarray, fps: int = 30, linear: bool = True):
+def play_video_from_array(frames: np.ndarray, fps: int = 30):
     """Riproduce un video da un array 4D (N, H, W, C)."""
-    for frame in frames:
+    print("conversione video in srgb a scopo di visualizzazione...")
+    frames_srgb = u.lin2srgb(frames)
+    for frame in frames_srgb:
         cv2.imshow("Video", frame)
         if cv2.waitKey(int(1000 / fps)) & 0xFF == ord("q"):
             break
@@ -96,8 +100,8 @@ def ken_burns_advanced_array(
     image: np.ndarray,
     video_fps: int = 30,
     video_duration: int = 5,
-    start_point: tuple = (0.5, 0.5),
-    end_point: tuple = (0.5, 0.5),
+    start_point: np.ndarray = np.array([0.5, 0.5]),
+    end_point: np.ndarray = np.array([0.5, 0.5]),
     start_zoom: float = 1.2,
     end_zoom: float = 1.2,
     video_size: tuple = (1280, 720),
@@ -107,7 +111,11 @@ def ken_burns_advanced_array(
     noise_speed: float = 0.5,
     noise_seed: Optional[int] = None,
 ) -> np.ndarray:
-    """Effetto Ken Burns avanzato con interpolazioni e rumore Perlin deterministico. Restituisce (N, H, W, C)."""
+    """
+    Effetto Ken Burns avanzato con interpolazioni e rumore Perlin deterministico.
+    Restituisce un array (N, H, W, C).
+    start_point e end_point possono essere in coordinate normalizzate (0-1) o assolute (pixel).
+    """
 
     def linear(t):
         return t
@@ -130,6 +138,19 @@ def ken_burns_advanced_array(
     pan_fn = interp_map.get(interp_pan, linear)
     zoom_fn = interp_map.get(interp_zoom, ease_in_out)
 
+    # Dimensioni immagine
+    H, W, _ = image.shape
+
+    # Conversione punti in normalizzati se sono assoluti
+    def normalize_point(p: np.ndarray) -> np.ndarray:
+        if p[0] > 1 or p[1] > 1:  # coordinate assolute (pixel)
+            return np.array([p[0] / W, p[1] / H], dtype=np.float32)
+        return p.astype(np.float32)
+
+    start_point = normalize_point(start_point)
+    end_point = normalize_point(end_point)
+
+    # Generazione rumore Perlin
     noise_gen_x = PerlinNoise(
         octaves=1,
         seed=noise_seed if noise_seed is not None else np.random.randint(0, 10000),
@@ -141,9 +162,8 @@ def ken_burns_advanced_array(
         else np.random.randint(0, 10000),
     )
 
-    H, W, _ = image.shape
     total_frames = int(video_fps * video_duration)
-    frames = np.zeros((total_frames, video_size[1], video_size[0], 3), dtype=np.uint8)
+    frames = np.zeros((total_frames, video_size[1], video_size[0], 3), dtype=np.float32)
 
     for i in range(total_frames):
         t = i / (total_frames - 1)
@@ -174,13 +194,15 @@ def ken_burns_advanced_array(
 # ESEMPIO DI UTILIZZO
 # =========================
 if __name__ == "__main__":
-    img = cv2.imread("Place925.jpg")
+    img = u.imread(
+        "/Users/alessandroteodori/stage/code/LSMI-dataset/nikon_processed/Place954/Place954_123_gt.tiff"
+    )
 
     # Genera il video (solo in memoria come array NumPy 4D)
     video_frames = ken_burns_advanced_array(
         image=img,
-        start_point=(0.1, 0.1),
-        end_point=(0.8, 0.8),
+        start_point=np.array([0.2, 0.2]),
+        end_point=np.array([0.8, 0.8]),
         start_zoom=2,
         end_zoom=2.5,
         interp_pan="linear",
