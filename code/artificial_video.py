@@ -97,8 +97,7 @@ def ken_burns_simple(
 
 def ken_burns_advanced(
     image: np.ndarray,
-    video_fps: int = 30,
-    video_duration: int = 5,
+    num_frames: int = 90,  # nuovo: numero di frame totali
     start_point: np.ndarray = np.array([0.5, 0.5]),
     end_point: np.ndarray = np.array([0.5, 0.5]),
     start_zoom: float = 1.2,
@@ -111,7 +110,7 @@ def ken_burns_advanced(
     noise_seed: Optional[int] = None,
 ) -> np.ndarray:
     """
-    Effetto Ken Burns avanzato con interpolazioni e rumore Perlin deterministico.
+    Effetto Ken Burns avanzato con numero di frame fisso.
     Restituisce un array (N, H, W, C).
     start_point e end_point possono essere in coordinate normalizzate (0-1) o assolute (pixel).
     """
@@ -137,19 +136,16 @@ def ken_burns_advanced(
     pan_fn = interp_map.get(interp_pan, linear)
     zoom_fn = interp_map.get(interp_zoom, ease_in_out)
 
-    # Dimensioni immagine
     H, W, _ = image.shape
 
-    # Conversione punti in normalizzati se sono assoluti
     def normalize_point(p: np.ndarray) -> np.ndarray:
-        if p[0] > 1 or p[1] > 1:  # coordinate assolute (pixel)
+        if p[0] > 1 or p[1] > 1:
             return np.array([p[0] / W, p[1] / H], dtype=np.float32)
         return p.astype(np.float32)
 
     start_point = normalize_point(start_point)
     end_point = normalize_point(end_point)
 
-    # Generazione rumore Perlin
     noise_gen_x = PerlinNoise(
         octaves=1,
         seed=noise_seed if noise_seed is not None else np.random.randint(0, 10000),
@@ -161,11 +157,10 @@ def ken_burns_advanced(
         else np.random.randint(0, 10000),
     )
 
-    total_frames = int(video_fps * video_duration)
-    frames = np.zeros((total_frames, video_size[1], video_size[0], 3), dtype=np.float32)
+    frames = np.zeros((num_frames, video_size[1], video_size[0], 3), dtype=np.float32)
 
-    for i in range(total_frames):
-        t = i / (total_frames - 1)
+    for i in range(num_frames):
+        t = i / (num_frames - 1)
         ft_pan = pan_fn(t)
         ft_zoom = zoom_fn(t)
 
