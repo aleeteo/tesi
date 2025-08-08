@@ -52,7 +52,6 @@ def load_video_npy(path: str) -> np.ndarray:
 
 def play_video_from_array(frames: np.ndarray, fps: int = 30):
     """Riproduce un video da un array 4D (N, H, W, C)."""
-    print("conversione video in srgb a scopo di visualizzazione...")
     frames_srgb = u.lin2srgb(frames)
     for frame in frames_srgb:
         cv2.imshow("Video", frame)
