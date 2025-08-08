@@ -64,7 +64,7 @@ def play_video_from_array(frames: np.ndarray, fps: int = 30):
 # =========================
 # FUNZIONI DI GENERAZIONE
 # =========================
-def ken_burns_simple_array(
+def ken_burns_simple(
     image: np.ndarray,
     video_fps: int = 30,
     video_duration: int = 5,
@@ -96,7 +96,7 @@ def ken_burns_simple_array(
     return frames
 
 
-def ken_burns_advanced_array(
+def ken_burns_advanced(
     image: np.ndarray,
     video_fps: int = 30,
     video_duration: int = 5,
@@ -199,7 +199,7 @@ if __name__ == "__main__":
     )
 
     # Genera il video (solo in memoria come array NumPy 4D)
-    video_frames = ken_burns_advanced_array(
+    video_frames = ken_burns_advanced(
         image=img,
         start_point=np.array([0.2, 0.2]),
         end_point=np.array([0.8, 0.8]),
