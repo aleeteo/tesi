@@ -1,8 +1,14 @@
-import json, os, random, cv2
+import json
+import os
+import random
+import cv2
 import numpy as np
-import get_metadata, artificial_video, tiff_visualization
+import get_metadata
+import artificial_video
+import my_utils as u
 
-lin2srgb = tiff_visualization.linear_tiff_to_srgb
+lin2srgb = u.lin2srgb
+get_centroids = get_metadata.get_centroids
 
 
 def gen_video_from_directory(input_dir: str) -> list:
@@ -14,37 +20,77 @@ def gen_video_from_directory(input_dir: str) -> list:
     if not os.path.isfile(meta_path):
         raise FileNotFoundError(f"File meta.json non trovato in: {input_dir}")
 
+    # definizione sensor_depth base al tipo di telecamera
+    depth: int = 10 if "galaxy" in input_dir.lower() else 14
+
     # caricemento del file meta.json
     with open(meta_path, "r", encoding="utf-8") as f:
         meta_data = json.load(f)
 
     # -------------------------------------------------------
-    key = list(meta_data.keys())[0]  # prendo il primo key del meta_data
-    # TODO: da mettere nel loop
+    for place in meta_data.keys():
+        # -------------------------------------------------------
+        # estrazione del nome dell'immagine e della GT
+        # con il massimo numero di illuminanti accesi
+        num_lights = meta_data[place]["NumOfLights"]
+        lights_str = "".join(
+            str(i + 1) for i in range(num_lights)
+        )  # es. "12", "123", ecc.
+        tiff_path = os.path.join(input_dir, place, f"{place}_{lights_str}.tiff")
+        gt_path = os.path.join(input_dir, place, f"{place}_{lights_str}_gt.tiff")
 
-    # -------------------------------------------------------
-    # estrazione del nome dell'immagine e della GT
-    # con il massimo numero di illuminanti accesi
-    num_lights = meta_data[key]["NumOfLights"]
-    lights_str = "".join(str(i + 1) for i in range(num_lights))  # es. "12", "123", ecc.
-    tiff_path = os.path.join(input_dir, key, f"{key}_{lights_str}.tiff")
-    gt_path = os.path.join(input_dir, key, f"{key}_{lights_str}_gt.tiff")
+        # -------------------------------------------------------
+        # caricamento in memotia delle immagini
+        img = u.imread(tiff_path, depth)
+        gt = u.imread(gt_path, depth)
 
-    # -------------------------------------------------------
-    # caricamento in memotia delle immagini
-    img = cv2.imread(tiff_path)
-    gt = cv2.imread(gt_path)
+        # impostazione del seed per la riproducibilità e altri parametri del video
+        seed = random.randint(0, 10000)
+        zoom = 3
+        fps = 15
+        video_duration = 3  # durata del video in secondi
+        # recupero i centroidi dei colorChecker
+        centroids = get_centroids(meta_data[place])
 
-    # impostazione del seed per la riproducibilità
-    seed = random.randint(0, 10000)
+        # TODO: applicare le maschere ai video
+        # TODO: concatenare i video in un unico video
 
-    # TODO: generazione del video
+        video_frames = artificial_video.ken_burns_advanced(
+            img,
+            start_point=centroids[0],
+            end_point=centroids[1],
+            start_zoom=zoom,
+            end_zoom=zoom,
+            interp_pan="linear",
+            interp_zoom="ease_in_out",
+            noise_strength=0.6,
+            noise_speed=0.2,
+            noise_seed=seed,
+            video_fps=fps,
+            video_duration=video_duration,
+        )
+
+        gt_video_frames = artificial_video.ken_burns_advanced(
+            gt,
+            start_point=centroids[0],
+            end_point=centroids[1],
+            start_zoom=zoom,
+            end_zoom=zoom,
+            interp_pan="linear",
+            interp_zoom="ease_in_out",
+            noise_strength=0.5,
+            noise_speed=0.2,
+            noise_seed=seed,
+            video_fps=fps,
+            video_duration=video_duration,
+        )
+
+        artificial_video.play_video_from_array(video_frames, fps=fps)
+        artificial_video.play_video_from_array(gt_video_frames, fps=fps)
 
     return []
 
 
 if __name__ == "__main__":
-    input_dir = (
-        "/Users/alessandroteodori/Documents/stage/code/LSMI-dataset/nikon_processed/"
-    )
+    input_dir = "/Users/alessandroteodori/stage/code/LSMI-dataset/nikon_processed/"
     gen_video_from_directory(input_dir)
