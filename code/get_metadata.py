@@ -4,8 +4,8 @@ import numpy as np
 
 def get_centroids(meta: dict) -> np.ndarray:
     mcc_coords = meta["MCCCoord"]
-    # Convertiamo ogni lista di coordinate in un array numpy e calcoliamo la media lungo l'asse 0 (x e y)
-    return np.array([np.mean(coords, axis=0) for coords in mcc_coords.values()])
+    # Calcolo della media e divisione per 2
+    return np.array([np.mean(coords, axis=0) for coords in mcc_coords.values()]) / 2
 
 
 if __name__ == "__main__":
