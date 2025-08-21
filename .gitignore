@@ -5,3 +5,5 @@ __pycache__/
 
 *.mp4
 LSMI-dataset/
+output_vids/
+temp.py
