@@ -2,12 +2,12 @@ import cv2
 import numpy as np
 
 
-def imread(path: str, sensor_depth: int = 14) -> np.ndarray:
+def imread(path: str, sensor_depth: int = 16) -> np.ndarray:
     """
     Legge un TIFF 16-bit lineare e restituisce un'immagine float32 normalizzata [0,1].
     Funziona anche se il TIFF originale ha una profondità effettiva inferiore.
     """
-    img = cv2.imread(path, cv2.IMREAD_UNCHANGED).astype(np.float32)
+    img = cv2.imread(path, cv2.IMREAD_UNCHANGED).astype(np.float32)  # type: ignore
     if img is None:
         raise FileNotFoundError(f"Impossibile leggere il file: {path}")
 
