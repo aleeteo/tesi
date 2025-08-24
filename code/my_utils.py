@@ -1,3 +1,6 @@
+import os
+from typing import Literal, Sequence
+
 import cv2
 import numpy as np
 
@@ -81,6 +84,77 @@ def imshow(img: np.ndarray, winname: str = "Image", wait: bool = True):
     if wait:
         cv2.waitKey(0)
         cv2.destroyWindow(winname)
+
+
+def write_video(
+    video: np.ndarray,
+    output_dir: str,
+    format: Literal["tiff", "npy"] = "tiff",
+    *,
+    prefix: str = "",
+    start_index: int = 0,
+) -> None:
+    """
+    Scrive un video (stack di frame) su disco.
+    - TIFF: salva frame numerati 0000, 0001, ... come TIFF 16-bit lineare.
+    - NPY : salva l'intero array in un unico .npy.
+    """
+    if format == "npy":
+        base = output_dir.rstrip("/\\")
+        os.makedirs(os.path.dirname(base) or ".", exist_ok=True)
+        np.save(base, video)
+        return
+
+    os.makedirs(output_dir, exist_ok=True)
+    n = video.shape[0]
+    pfx = f"{prefix}_" if prefix else ""
+    for i in range(n):
+        name = f"{pfx}{i + start_index:04d}"
+        path = os.path.join(output_dir, name)
+        imwrite(path, video[i])
+
+
+def save_place_videos(
+    result: dict,
+    output_root: str,
+    format: Literal["tiff", "npy"] = "tiff",
+) -> None:
+    """
+    Salva un singolo 'place'.
+    Struttura:
+      - TIFF: <root>/<key>/{og,gt}/0000.tiff, ...
+      - NPY : <root>/<key>/{og.npy, gt.npy}
+    """
+    key = result["key"]
+    og = result["og_video"]
+    gt = result["gt_video"]
+
+    if format == "tiff":
+        og_dir = os.path.join(output_root, key, "og")
+        gt_dir = os.path.join(output_root, key, "gt")
+        write_video(og, og_dir, "tiff")
+        write_video(gt, gt_dir, "tiff")
+
+    elif format == "npy":
+        place_dir = os.path.join(output_root, key)
+        os.makedirs(place_dir, exist_ok=True)
+        write_video(og, os.path.join(place_dir, "og"), "npy")
+        write_video(gt, os.path.join(place_dir, "gt"), "npy")
+
+    else:
+        raise ValueError(f"Formato non supportato: {format}")
+
+
+def save_generated_videos(
+    results: Sequence[dict],
+    output_root: str,
+    format: Literal["tiff", "npy"] = "tiff",
+) -> None:
+    """
+    Salva una lista di results in blocco.
+    """
+    for res in results:
+        save_place_videos(res, output_root, format)
 
 
 if __name__ == "__main__":

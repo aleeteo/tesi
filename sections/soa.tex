@@ -1,0 +1,49 @@
+
+\chapter{State of the Art in Color Constancy}
+
+\section{Traditional Methods}
+
+The first traditional AWB algorithms are based on simple statistical assumptions. The \textbf{Gray-World} algorithm assumes that the average reflectance of the scene is neutral (gray), and balances the RGB channels so that their averages coincide \cite{zapryanov_automatic_2012}. The \textbf{White-Patch} method (\textit{max-RGB}) instead presumes that the brightest pixel represents a white reference, estimating the illuminant from the maximum values of the three channels. These approaches are fast but fail in conditions that violate the basic assumptions (monochromatic scenes, color dominance, etc.).
+
+An extension is \textbf{Shades-of-Gray}, which generalizes Gray-World and White-Patch using the Minkowski norm of order $p$: for $p=1$ it reduces to Gray-World, for $p\to \infty$ to White-Patch, while intermediate values offer trade-offs in robustness \cite{zapryanov_automatic_2012}. The \textbf{Gray-Edge} method shifts the focus from absolute values to image gradients: the hypothesis is that the average differences on scene edges are achromatic \cite{van_de_weijer_edge-based_2007}. 
+
+More complex criteria have also been explored, such as \textbf{gamut mapping} (Forsyth), which models the set of colors possible under a given illuminant and determines the transformation needed to bring the observed colors back into the canonical space. Probabilistic approaches, such as Bayesian ones, further improved performance but at the cost of higher computational complexity \cite{gehler_bayesian_2008}.
+
+\section{Extensions of Traditional Methods}
+
+Several variants have been proposed to make classical approaches more robust. Weng \textit{et al.} introduced a filter that removes highly saturated pixels before applying Gray-World, reducing errors in scenes with dominant colors \cite{weng_novel_2005}. Thai \textit{et al.} proposed instead a method based on pixel “greyness” in YCbCr, weighting more heavily those close to neutral gray \cite{thai_fast_2016}. 
+
+A local approach is \textbf{GCP-AWB} (Gray Color Points), which searches for neutral areas with minimal deviation in U-V chrominance and computes the illuminant from them \cite{huo_robust_2006}. These methods show how relatively simple extensions can improve robustness and adaptability in complex scenarios.
+
+\section{Modern Non-Deep Methods}
+
+More recent algorithms reformulated the problem in the frequency domain. \textbf{Fast Fourier Color Constancy (FFCC)} represents the illuminant in log-chroma space and estimates it through fast convolution, achieving high accuracy and speed \cite{barron_fast_2017}. Moreover, FFCC introduces a temporal filtering mechanism that makes it suitable for video sequences, reducing frame-to-frame flicker.
+
+Its extension, \textbf{Integral FFCC (IFFCC)}, addresses \textit{spatially-varying} scenarios, producing local illumination maps through integral histograms while maintaining real-time processing \cite{wei_integral_2025}. This makes IFFCC particularly suited for complex scenes and video pipelines.
+
+\section{Machine Learning and Deep Learning Approaches}
+
+With the advent of calibrated datasets and neural networks, learning-based methods have achieved state-of-the-art performance. An example is \textbf{KNN-WB}, which leverages large collections of correctly balanced images to estimate the illuminant via nearest neighbors \cite{afifi_deep_2020}. 
+
+Afifi and Brown introduced \textbf{Deep WB}, an encoder-decoder architecture that, given an sRGB image, produces corrected versions for indoor and outdoor illuminants, enabling flexible correction and editing \cite{afifi_deep_2020}. Subsequently, \textbf{Deep WB Blending} extended the approach to multi-illuminant scenarios, blending images with different WB presets through locally learned weight maps \cite{afifi_auto_2022}.
+
+These methods show how neural networks can overcome the rigid assumptions of classical methods, handling both single- and mixed-illuminant cases.
+
+\section{Datasets for Color Constancy}
+
+Progress in this field has been enabled by annotated datasets, which have supported both the development of new algorithms and their comparative evaluation. Datasets differ in scene type, number of images, illumination characteristics, and ground truth granularity.
+
+The \textbf{Color Checker} by Gehler-Shi \cite{gehler_bayesian_2008} and \textbf{Cube++} \cite{ershov_cube_2020} contain indoor and outdoor scenes with a single known illuminant and provide ground truth via a Macbeth ColorChecker chart placed in the scenes. These datasets have long been a standard reference for benchmarking traditional and ML methods.
+
+The \textbf{NUS 8-Camera} \cite{cheng_illuminant_2014} increases diversity by capturing the same scenes with eight different cameras, allowing the study of cross-camera variability and algorithm robustness.
+
+The \textbf{INTEL-TAU} \cite{laakom_intel-tau_2020} includes over 7000 high-resolution images acquired with different cameras and enriched with additional annotations, such as color shading and light spectra. Its size and annotation richness make it a benchmark of choice for learning-based methods.
+
+For multi-illuminant scenarios, datasets include \textbf{Beigpour Multi-Illuminant} \cite{beigpour_multi-illuminant_2013}, which provides per-pixel annotations of reflectance and sources in lab settings; \textbf{SFU Gray Sphere} and \textbf{Flying Gray Ball} \cite{ciurea_large_2003,aghaei_flying_2020}, which use gray reference objects to estimate multiple illuminants in real scenes; and finally \textbf{LSMI} \cite{kim_large_2021}, today the most comprehensive dataset for the multi-illuminant problem. LSMI contains nearly 7500 images with per-pixel ground truth under different illumination and devices, providing detailed mixing maps of illuminants. This dataset has become essential for training and evaluating spatially varying and deep learning methods.
+
+In summary, available datasets cover a wide spectrum of complexity: from single-illuminant images with global annotations to dense ground truth multi-illuminant datasets, offering a solid foundation for advancing the state of the art.
+
+\section{Conclusions}
+
+The state of the art in white balance shows an evolution from simple, fast methods based on statistical assumptions to data-driven approaches capable of handling video and multi-illuminant scenarios. The current challenge is to reconcile accuracy, robustness, and temporal stability with the computational efficiency required for real-time applications.
+

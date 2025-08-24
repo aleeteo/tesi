@@ -1,18 +1,41 @@
-% tables
-\usepackage{adjustbox}
-\usepackage{longtable}
-\usepackage{booktabs}
-\usepackage{ltablex}
-\keepXColumns  % evita che LaTeX sostituisca X con p{}
+% -- Font/encoding (pdflatex) --
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
 
-% graphics
+% -- Lingue --
+\usepackage[italian,english]{babel}
+\selectlanguage{italian}
+
+% -- Microtipografia & interlinea --
+\usepackage{microtype}
+\usepackage{setspace} % usa \onehalfspacing nel documento, se vuoi
+
+% -- Layout: UNA sola volta qui
+\usepackage[paper=a4paper,margin=1in]{geometry}
+
+% -- Grafica e tabelle --
 \usepackage{graphicx}
+\usepackage{adjustbox}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{ltablex}
+\keepXColumns
 
-% citations and bibliography
-% \usepackage{babel}[English] % Use English language
-\usepackage{csquotes}
+% -- Didascalie / sottofigure --
 \usepackage{caption}
 \usepackage{subcaption}
 
+% -- Link (dopo geometry) --
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  citecolor=black,
+  urlcolor=black
+}
+
+% -- Citazioni e bibliografia --
+\usepackage{csquotes}
 \usepackage[backend=biber,style=authoryear]{biblatex}
 \addbibresource{Tesi-triennale.bib}

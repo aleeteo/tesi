@@ -1,0 +1,21 @@
+% \documentclass[a4paper,12pt]{book}
+\documentclass{book}
+
+\input{preamble.tex}
+
+\begin{document}
+  \frontmatter
+  \input{sections/frontmatter.tex}
+
+  \tableofcontents
+
+  \mainmatter
+  \include{sections/intro}
+  \include{sections/soa}
+  \include{sections/methods}
+  \include{sections/testing}
+  \include{sections/conclusions}
+
+  \backmatter
+  \include{sections/backmatter}
+\end{document}
