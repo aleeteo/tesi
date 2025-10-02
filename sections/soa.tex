@@ -1,13 +1,19 @@
 
 \chapter{State of the Art in Color Constancy}
 
-\section{Traditional Methods}
+\section{Traditional Methods}\label{sec:traditional_methods} % (fold)
 
-The first traditional AWB algorithms are based on simple statistical assumptions. The \textbf{Gray-World} algorithm assumes that the average reflectance of the scene is neutral (gray), and balances the RGB channels so that their averages coincide \cite{zapryanov_automatic_2012}. The \textbf{White-Patch} method (\textit{max-RGB}) instead presumes that the brightest pixel represents a white reference, estimating the illuminant from the maximum values of the three channels. These approaches are fast but fail in conditions that violate the basic assumptions (monochromatic scenes, color dominance, etc.).
+The first traditional AWB algorithms are based on simple statistical assumptions.
+The \textbf{Gray-World} algorithm assumes that the average reflectance of the scene is neutral (gray), and balances the RGB channels so that their averages coincide \cite{zapryanov_automatic_2012}.
+The \textbf{White-Patch} method (\textit{max-RGB}) instead presumes that the brightest pixel represents a white reference, estimating the illuminant from the maximum values of the three channels.
+These approaches are fast but fail in conditions that violate the basic assumptions (monochromatic scenes, color dominance, etc.).
 
-An extension is \textbf{Shades-of-Gray}, which generalizes Gray-World and White-Patch using the Minkowski norm of order $p$: for $p=1$ it reduces to Gray-World, for $p\to \infty$ to White-Patch, while intermediate values offer trade-offs in robustness \cite{zapryanov_automatic_2012}. The \textbf{Gray-Edge} method shifts the focus from absolute values to image gradients: the hypothesis is that the average differences on scene edges are achromatic \cite{van_de_weijer_edge-based_2007}. 
+An extension is \textbf{Shades-of-Gray}, which generalizes Gray-World and White-Patch using the Minkowski norm of order $p$: for $p=1$ it reduces to Gray-World, for $p\to \infty$ to White-Patch, while intermediate values offer trade-offs in robustness \cite{zapryanov_automatic_2012}.
+The \textbf{Gray-Edge} method shifts the focus from absolute values to image gradients: the hypothesis is that the average differences on scene edges are achromatic \cite{van_de_weijer_edge-based_2007}. 
 
-More complex criteria have also been explored, such as \textbf{gamut mapping} (Forsyth), which models the set of colors possible under a given illuminant and determines the transformation needed to bring the observed colors back into the canonical space. Probabilistic approaches, such as Bayesian ones, further improved performance but at the cost of higher computational complexity \cite{gehler_bayesian_2008}.
+More complex criteria have also been explored, such as \textbf{gamut mapping} (Forsyth), which models the set of colors possible under a given illuminant and determines the transformation needed to bring the observed colors back into the canonical space.
+Probabilistic approaches, such as Bayesian ones, further improved performance but at the cost of higher computational complexity \cite{gehler_bayesian_2008}.
+% section Traditional Methods (end)
 
 \section{Extensions of Traditional Methods}
 
