@@ -1,55 +1,55 @@
 
-\chapter{State of the Art in Color Constancy}
+\chapter{Stato dell'Arte nella Costanza Cromatica}
 
-\section{Traditional Methods}\label{sec:traditional_methods} % (fold)
+\section{Metodi Tradizionali}\label{sec:traditional_methods} % (fold) 
 
-The first traditional AWB algorithms are based on simple statistical assumptions.
-The \textbf{Gray-World} algorithm assumes that the average reflectance of the scene is neutral (gray), and balances the RGB channels so that their averages coincide \cite{zapryanov_automatic_2012}.
-The \textbf{White-Patch} method (\textit{max-RGB}) instead presumes that the brightest pixel represents a white reference, estimating the illuminant from the maximum values of the three channels.
-These approaches are fast but fail in conditions that violate the basic assumptions (monochromatic scenes, color dominance, etc.).
+I primi algoritmi tradizionali di AWB si basano su semplici ipotesi statistiche.
+L'algoritmo \textbf{Gray-World} presume che la riflettanza media della scena sia neutra (grigia) e bilancia i canali RGB in modo che le loro medie coincidano \cite{zapryanov_automatic_2012}.
+Il metodo \textbf{White-Patch} (\textit{max-RGB}) presuppone invece che il pixel più luminoso rappresenti un riferimento bianco, stimando l'illuminante dai valori massimi dei tre canali.
+Questi approcci sono veloci ma falliscono in condizioni che violano le ipotesi di base (scene monocromatiche, dominanza cromatica, ecc.).
 
-An extension is \textbf{Shades-of-Gray}, which generalizes Gray-World and White-Patch using the Minkowski norm of order $p$: for $p=1$ it reduces to Gray-World, for $p\to \infty$ to White-Patch, while intermediate values offer trade-offs in robustness \cite{zapryanov_automatic_2012}.
-The \textbf{Gray-Edge} method shifts the focus from absolute values to image gradients: the hypothesis is that the average differences on scene edges are achromatic \cite{van_de_weijer_edge-based_2007}. 
+Un'estensione è \textbf{Shades-of-Gray}, che generalizza Gray-World e White-Patch usando la norma di Minkowski di ordine $p$: per $p=1$ si riduce a Gray-World, per $p\to \infty$ a White-Patch, mentre valori intermedi offrono compromessi in termini di robustezza \cite{zapryanov_automatic_2012}.
+Il metodo \textbf{Gray-Edge} sposta l'attenzione dai valori assoluti ai gradienti dell'immagine: l'ipotesi è che le differenze medie sui bordi della scena siano acromatiche \cite{van_de_weijer_edge-based_2007}. 
 
-More complex criteria have also been explored, such as \textbf{gamut mapping} (Forsyth), which models the set of colors possible under a given illuminant and determines the transformation needed to bring the observed colors back into the canonical space.
-Probabilistic approaches, such as Bayesian ones, further improved performance but at the cost of higher computational complexity \cite{gehler_bayesian_2008}.
-% section Traditional Methods (end)
+Sono stati esplorati anche criteri più complessi, come il \textbf{gamut mapping} (Forsyth), che modella l'insieme dei colori possibili sotto un dato illuminante e determina la trasformazione necessaria per riportare i colori osservati nello spazio canonico.
+Approcci probabilistici, come quelli bayesiani, hanno ulteriormente migliorato le prestazioni ma a costo di una maggiore complessità computazionale \cite{gehler_bayesian_2008}.
+% section Metodi Tradizionali (end)
 
-\section{Extensions of Traditional Methods}
+\section{Estensioni dei Metodi Tradizionali}
 
-Several variants have been proposed to make classical approaches more robust. Weng \textit{et al.} introduced a filter that removes highly saturated pixels before applying Gray-World, reducing errors in scenes with dominant colors \cite{weng_novel_2005}. Thai \textit{et al.} proposed instead a method based on pixel “greyness” in YCbCr, weighting more heavily those close to neutral gray \cite{thai_fast_2016}. 
+Sono state proposte diverse varianti per rendere gli approcci classici più robusti. Weng \textit{et al.} hanno introdotto un filtro che rimuove i pixel altamente saturi prima di applicare Gray-World, riducendo gli errori in scene con colori dominanti \cite{weng_novel_2005}. Thai \textit{et al.} hanno invece proposto un metodo basato sulla ``grigiezza'' dei pixel in YCbCr, pesando maggiormente quelli vicini al grigio neutro \cite{thai_fast_2016}. 
 
-A local approach is \textbf{GCP-AWB} (Gray Color Points), which searches for neutral areas with minimal deviation in U-V chrominance and computes the illuminant from them \cite{huo_robust_2006}. These methods show how relatively simple extensions can improve robustness and adaptability in complex scenarios.
+Un approccio locale è \textbf{GCP-AWB} (Gray Color Points), che ricerca aree neutre con deviazione minima nella crominanza U-V e calcola da esse l'illuminante \cite{huo_robust_2006}. Questi metodi mostrano come estensioni relativamente semplici possano migliorare robustezza e adattabilità in scenari complessi.
 
-\section{Modern Non-Deep Methods}
+\section{Metodi Moderni Non-Deep}
 
-More recent algorithms reformulated the problem in the frequency domain. \textbf{Fast Fourier Color Constancy (FFCC)} represents the illuminant in log-chroma space and estimates it through fast convolution, achieving high accuracy and speed \cite{barron_fast_2017}. Moreover, FFCC introduces a temporal filtering mechanism that makes it suitable for video sequences, reducing frame-to-frame flicker.
+Algoritmi più recenti hanno riformulato il problema nel dominio delle frequenze. \textbf{Fast Fourier Color Constancy (FFCC)} rappresenta l'illuminante nello spazio log-croma e lo stima attraverso convoluzione veloce, ottenendo alta accuratezza e velocità \cite{barron_fast_2017}. Inoltre, FFCC introduce un meccanismo di filtraggio temporale che lo rende adatto alle sequenze video, riducendo il flickering fra fotogrammi.
 
-Its extension, \textbf{Integral FFCC (IFFCC)}, addresses \textit{spatially-varying} scenarios, producing local illumination maps through integral histograms while maintaining real-time processing \cite{wei_integral_2025}. This makes IFFCC particularly suited for complex scenes and video pipelines.
+La sua estensione, \textbf{Integral FFCC (IFFCC)}, affronta scenari \textit{spazialmente variabili}, producendo mappe di illuminazione locali tramite istogrammi integrali pur mantenendo l'elaborazione in tempo reale \cite{wei_integral_2025}. Questo rende IFFCC particolarmente adatto a scene complesse e pipeline video.
 
-\section{Machine Learning and Deep Learning Approaches}
+\section{Approcci di Machine Learning e Deep Learning}
 
-With the advent of calibrated datasets and neural networks, learning-based methods have achieved state-of-the-art performance. An example is \textbf{KNN-WB}, which leverages large collections of correctly balanced images to estimate the illuminant via nearest neighbors \cite{afifi_deep_2020}. 
+Con l'avvento di dataset calibrati e reti neurali, i metodi basati sull'apprendimento hanno raggiunto prestazioni allo stato dell'arte. Un esempio è \textbf{KNN-WB}, che sfrutta ampie collezioni di immagini correttamente bilanciate per stimare l'illuminante tramite k-nearest neighbors \cite{afifi_deep_2020}. 
 
-Afifi and Brown introduced \textbf{Deep WB}, an encoder-decoder architecture that, given an sRGB image, produces corrected versions for indoor and outdoor illuminants, enabling flexible correction and editing \cite{afifi_deep_2020}. Subsequently, \textbf{Deep WB Blending} extended the approach to multi-illuminant scenarios, blending images with different WB presets through locally learned weight maps \cite{afifi_auto_2022}.
+Afifi e Brown hanno introdotto \textbf{Deep WB}, un'architettura encoder-decoder che, data un'immagine sRGB, produce versioni corrette per illuminanti indoor e outdoor, consentendo correzione e editing flessibili \cite{afifi_deep_2020}. Successivamente, \textbf{Deep WB Blending} ha esteso l'approccio a scenari multi-illuminante, fondendo immagini con diversi preset di WB attraverso mappe di peso apprese localmente \cite{afifi_auto_2022}.
 
-These methods show how neural networks can overcome the rigid assumptions of classical methods, handling both single- and mixed-illuminant cases.
+Questi metodi mostrano come le reti neurali possano superare le rigide ipotesi dei metodi classici, gestendo sia casi a singolo illuminante che a illuminante misto.
 
-\section{Datasets for Color Constancy}
+\section{Dataset per la Costanza Cromatica}
 
-Progress in this field has been enabled by annotated datasets, which have supported both the development of new algorithms and their comparative evaluation. Datasets differ in scene type, number of images, illumination characteristics, and ground truth granularity.
+I progressi in questo campo sono stati resi possibili dai dataset annotati, che hanno supportato sia lo sviluppo di nuovi algoritmi sia la loro valutazione comparativa. I dataset differiscono per tipo di scena, numero di immagini, caratteristiche di illuminazione e granularità della ground truth.
 
-The \textbf{Color Checker} by Gehler-Shi \cite{gehler_bayesian_2008} and \textbf{Cube++} \cite{ershov_cube_2020} contain indoor and outdoor scenes with a single known illuminant and provide ground truth via a Macbeth ColorChecker chart placed in the scenes. These datasets have long been a standard reference for benchmarking traditional and ML methods.
+Il \textbf{Color Checker} di Gehler-Shi \cite{gehler_bayesian_2008} e \textbf{Cube++} \cite{ershov_cube_2020} contengono scene indoor e outdoor con un unico illuminante noto e forniscono ground truth tramite una carta Macbeth ColorChecker posizionata nelle scene. Questi dataset sono stati a lungo un riferimento standard per il benchmarking di metodi tradizionali e ML.
 
-The \textbf{NUS 8-Camera} \cite{cheng_illuminant_2014} increases diversity by capturing the same scenes with eight different cameras, allowing the study of cross-camera variability and algorithm robustness.
+Il \textbf{NUS 8-Camera} \cite{cheng_illuminant_2014} aumenta la diversità catturando le stesse scene con otto fotocamere diverse, permettendo di studiare la variabilità inter-camera e la robustezza degli algoritmi.
 
-The \textbf{INTEL-TAU} \cite{laakom_intel-tau_2020} includes over 7000 high-resolution images acquired with different cameras and enriched with additional annotations, such as color shading and light spectra. Its size and annotation richness make it a benchmark of choice for learning-based methods.
+L'\textbf{INTEL-TAU} \cite{laakom_intel-tau_2020} include oltre 7000 immagini ad alta risoluzione acquisite con diverse fotocamere e arricchite con annotazioni aggiuntive, come color shading e spettri luminosi. La sua dimensione e ricchezza di annotazioni lo rendono un benchmark di riferimento per i metodi basati su apprendimento.
 
-For multi-illuminant scenarios, datasets include \textbf{Beigpour Multi-Illuminant} \cite{beigpour_multi-illuminant_2013}, which provides per-pixel annotations of reflectance and sources in lab settings; \textbf{SFU Gray Sphere} and \textbf{Flying Gray Ball} \cite{ciurea_large_2003,aghaei_flying_2020}, which use gray reference objects to estimate multiple illuminants in real scenes; and finally \textbf{LSMI} \cite{kim_large_2021}, today the most comprehensive dataset for the multi-illuminant problem. LSMI contains nearly 7500 images with per-pixel ground truth under different illumination and devices, providing detailed mixing maps of illuminants. This dataset has become essential for training and evaluating spatially varying and deep learning methods.
+Per scenari multi-illuminante, i dataset includono \textbf{Beigpour Multi-Illuminant} \cite{beigpour_multi-illuminant_2013}, che fornisce annotazioni per-pixel di riflettanza e sorgenti in ambienti di laboratorio; \textbf{SFU Gray Sphere} e \textbf{Flying Gray Ball} \cite{ciurea_large_2003,aghaei_flying_2020}, che usano oggetti di riferimento grigi per stimare più illuminanti in scene reali; e infine \textbf{LSMI} \cite{kim_large_2021}, oggi il dataset più completo per il problema multi-illuminante. LSMI contiene quasi 7500 immagini con ground truth per-pixel sotto differenti illuminazioni e dispositivi, fornendo mappe dettagliate di miscelazione degli illuminanti. Questo dataset è diventato essenziale per l'addestramento e la valutazione di metodi spazialmente variabili e deep learning.
 
-In summary, available datasets cover a wide spectrum of complexity: from single-illuminant images with global annotations to dense ground truth multi-illuminant datasets, offering a solid foundation for advancing the state of the art.
+In sintesi, i dataset disponibili coprono un ampio spettro di complessità: da immagini a singolo illuminante con annotazioni globali a dataset multi-illuminante con ground truth densi, offrendo una solida base per far avanzare lo stato dell'arte.
 
-\section{Conclusions}
+\section{Conclusioni}
 
-The state of the art in white balance shows an evolution from simple, fast methods based on statistical assumptions to data-driven approaches capable of handling video and multi-illuminant scenarios. The current challenge is to reconcile accuracy, robustness, and temporal stability with the computational efficiency required for real-time applications.
+Lo stato dell'arte nel bilanciamento del bianco mostra un'evoluzione da metodi semplici e veloci basati su ipotesi statistiche ad approcci guidati dai dati capaci di gestire video e scenari multi-illuminante. La sfida attuale è conciliare accuratezza, robustezza e stabilità temporale con l'efficienza computazionale richiesta dalle applicazioni real-time.
 
