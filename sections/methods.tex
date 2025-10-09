@@ -244,20 +244,19 @@ Questa struttura permette parallelizzazione efficiente durante il caricamento de
 \section{Architettura del Sistema}\label{sec:architettura_del_sistema}
 Il sistema di stima dell'illuminante per video sintetici sviluppato si articola in una pipeline modulare composta da tre componenti fondamentali: \emph{stima spaziale}, \emph{estensione locale} e \emph{estensione temporale}. Ciascuna componente è progettata per operare in modo indipendente, permettendo l'esplorazione di diverse combinazioni di tecniche e parametri.
 
-%TODO: aggiungere immagine pipeline overview
 La Figura~\ref{fig:pipeline_overview} illustra lo schema architetturale complessivo del sistema.
 
 \begin{figure}[ht]
 \centering
 \begin{tikzpicture}[
-    node distance=1.2cm,
-    block/.style={rectangle, draw, fill=blue!20, text width=6cm, text centered, rounded corners, minimum height=1cm, font=\small},
-    process/.style={rectangle, draw, fill=green!20, text width=6cm, text centered, rounded corners, minimum height=1cm, font=\small},
-    subblock/.style={rectangle, draw, fill=green!10, text width=5.5cm, text centered, rounded corners, minimum height=0.7cm, font=\footnotesize},
-    optional/.style={dashed, draw=gray, thick},
-    output/.style={rectangle, draw, fill=orange!20, text width=6cm, text centered, rounded corners, minimum height=1cm, font=\small},
+    node distance=0.8cm,
+    block/.style={rectangle, draw, fill=blue!20, text width=7cm, text centered, rounded corners, minimum height=1.2cm, font=\normalsize},
+    process/.style={rectangle, draw, fill=green!20, text width=7cm, text centered, rounded corners, minimum height=1.2cm, font=\normalsize},
+    subblock/.style={rectangle, draw, fill=green!10, text width=7cm, text centered, rounded corners, minimum height=0.9cm, font=\small},
+    optional/.style={dashed, draw=gray!70, thick},
+    output/.style={rectangle, draw, fill=orange!20, text width=7cm, text centered, rounded corners, minimum height=1.4cm, font=\normalsize},
     arrow/.style={->, >=stealth, thick},
-    optarrow/.style={->, >=stealth, thick, dashed, gray}
+    optarrow/.style={->, >=stealth, thick, dashed, gray!70}
 ]
 
 % Input
@@ -266,18 +265,26 @@ La Figura~\ref{fig:pipeline_overview} illustra lo schema architetturale compless
 % Spatial Estimation
 \node[process, below=of input] (spatial) {\textbf{Stima Spaziale Frame-by-Frame}\\$\hat{\mathbf{E}}_t = f_{\text{spatial}}(\mathbf{V}_t, \mathbf{M}_t; \theta)$};
 
-% Sub-blocks for spatial methods
-\node[subblock, below=0.3cm of spatial, xshift=-0.25cm] (global) {Metodi Globali: GW, WP, SoG, GE};
-\node[subblock, below=0.05cm of global] (local) {Metodi Locali: Grid / Conv};
+% Sub-blocks for spatial methods - positioned to the side
+\node[subblock, right=1.5cm of spatial, text width=4cm, align=left] (methods) {
+    \textbf{Metodi Base:}\\
+    \footnotesize
+    • GW, WP\\
+    • SoG, GE\\[0.1cm]
+    \textbf{Estensione:}\\
+    \footnotesize
+    • Grid (patch)\\
+    • Conv (sliding window)
+};
 
 % Intermediate output
-\node[process, below=1.8cm of spatial] (stack) {Stack di Mappe $\{\hat{\mathbf{E}}_t\}_{t=1}^T$};
+\node[process, below=1.2cm of spatial] (stack) {Stack di Mappe $\{\hat{\mathbf{E}}_t\}_{t=1}^T$};
 
 % Temporal Filtering (optional)
 \node[process, optional, below=of stack] (temporal) {\textbf{Filtro Temporale (opzionale)}\\EMA / Gaussian\\$\tilde{\mathbf{E}}_t = g_{\text{temporal}}(\{\hat{\mathbf{E}}_\tau\})$};
 
 % Normalization
-\node[process, below=of temporal] (norm) {\textbf{Normalizzazione L2}\\$\mathbf{E}_t(x,y) = \frac{\tilde{\mathbf{E}}_t(x,y)}{\|\tilde{\mathbf{E}}_t(x,y)\|_2}$};
+\node[process, below=of temporal] (norm) {\textbf{Normalizzazione L2}\\$\mathbf{E}_t(x,y) = \dfrac{\tilde{\mathbf{E}}_t(x,y)}{\|\tilde{\mathbf{E}}_t(x,y)\|_2}$};
 
 % Output
 \node[output, below=of norm] (output) {\textbf{Output}\\Mappe Dense $\{\mathbf{E}_t\}_{t=1}^T$\\Illuminanti Globali $\{\bar{\mathbf{E}}_t\}_{t=1}^T$\\Metriche di Performance};
@@ -290,7 +297,7 @@ La Figura~\ref{fig:pipeline_overview} illustra lo schema architetturale compless
 \draw[arrow] (norm) -- (output);
 
 % Bypass arrow (if temporal is skipped)
-\draw[optarrow] (stack.east) -- ++(1.5,0) |- (norm.east) node[midway, right, font=\tiny] {bypass};
+\draw[optarrow] (stack.east) -- ++(1.8,0) |- (norm.east) node[pos=0.85, right, font=\scriptsize, text=gray] {bypass};
 
 \end{tikzpicture}
 \caption{Schema architetturale della pipeline di stima dell'illuminante. I componenti opzionali sono rappresentati con bordi tratteggiati. La freccia di bypass permette di saltare il filtraggio temporale.}
