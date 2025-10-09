@@ -4,21 +4,33 @@
 \usepackage{lmodern}
 
 % -- Lingue --
-% \usepackage[italian,english]{babel}
-% \selectlanguage{italian}
 \usepackage[italian]{babel}
 
 % -- Microtipografia & interlinea --
 \usepackage{microtype}
-\usepackage{setspace} % usa \onehalfspacing nel documento, se vuoi
+\usepackage{setspace}
+
+% -- Matematica (AGGIUNGI QUESTI) --
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
 
 % -- Grafica e tabelle --
 \usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds}
 \usepackage{adjustbox}
 \usepackage{booktabs}
 \usepackage{longtable}
 \usepackage{ltablex}
 \keepXColumns
+
+% -- pseudocodice -- 
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+% -- Layout landscape (AGGIUNGI QUESTO) --
+\usepackage{lscape}  % per ruotare le pagine con le tabelle
 
 % -- Didascalie / sottofigure --
 \usepackage{caption}
@@ -26,14 +38,14 @@
 
 % -- Link (dopo geometry) --
 \usepackage{hyperref}
-\hypersetup{
-  colorlinks=true,
-  linkcolor=black,
-  citecolor=black,
-  urlcolor=black
-}
+% \hypersetup{
+%   colorlinks=true,
+%   linkcolor=black,
+%   citecolor=black,
+%   urlcolor=black
+% }
 
 % -- Citazioni e bibliografia --
 \usepackage{csquotes}
-\usepackage[backend=biber,style=authoryear]{biblatex}
+\usepackage[backend=biber,style=numeric]{biblatex}
 \addbibresource{Tesi-triennale.bib}

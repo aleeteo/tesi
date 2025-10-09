@@ -1,55 +1,203 @@
 
-\chapter{Stato dell'Arte nella Costanza Cromatica}
+\chapter{Stato dell'Arte nella Costanza Cromatica}\label{ch:soa}
 
-\section{Metodi Tradizionali}\label{sec:traditional_methods} % (fold) 
+La costanza cromatica è un problema fondamentale nella visione computazionale che mira a recuperare i colori reali degli oggetti indipendentemente dall'illuminazione della scena. In questo capitolo esaminiamo l'evoluzione degli algoritmi di bilanciamento automatico del bianco (AWB), partendo dai metodi tradizionali basati su ipotesi statistiche fino agli approcci moderni basati su deep learning, includendo una panoramica dettagliata dei dataset disponibili per la valutazione.
 
-I primi algoritmi tradizionali di AWB si basano su semplici ipotesi statistiche.
-L'algoritmo \textbf{Gray-World} presume che la riflettanza media della scena sia neutra (grigia) e bilancia i canali RGB in modo che le loro medie coincidano \cite{zapryanov_automatic_2012}.
-Il metodo \textbf{White-Patch} (\textit{max-RGB}) presuppone invece che il pixel più luminoso rappresenti un riferimento bianco, stimando l'illuminante dai valori massimi dei tre canali.
-Questi approcci sono veloci ma falliscono in condizioni che violano le ipotesi di base (scene monocromatiche, dominanza cromatica, ecc.).
+\section{Metodi Tradizionali e loro Formulazioni Matematiche}\label{sec:traditional_methods}
 
-Un'estensione è \textbf{Shades-of-Gray}, che generalizza Gray-World e White-Patch usando la norma di Minkowski di ordine $p$: per $p=1$ si riduce a Gray-World, per $p\to \infty$ a White-Patch, mentre valori intermedi offrono compromessi in termini di robustezza \cite{zapryanov_automatic_2012}.
-Il metodo \textbf{Gray-Edge} sposta l'attenzione dai valori assoluti ai gradienti dell'immagine: l'ipotesi è che le differenze medie sui bordi della scena siano acromatiche \cite{van_de_weijer_edge-based_2007}. 
+I primi algoritmi di AWB si basano su ipotesi statistiche semplici ma efficaci sulla distribuzione dei colori nelle immagini naturali. Questi metodi rimangono rilevanti per la loro efficienza computazionale e sono spesso utilizzati come baseline o in sistemi embedded con risorse limitate.
 
-Sono stati esplorati anche criteri più complessi, come il \textbf{gamut mapping} (Forsyth), che modella l'insieme dei colori possibili sotto un dato illuminante e determina la trasformazione necessaria per riportare i colori osservati nello spazio canonico.
-Approcci probabilistici, come quelli bayesiani, hanno ulteriormente migliorato le prestazioni ma a costo di una maggiore complessità computazionale \cite{gehler_bayesian_2008}.
-% section Metodi Tradizionali (end)
+\subsection{Gray-World}
 
-\section{Estensioni dei Metodi Tradizionali}
+L'algoritmo \textbf{Gray-World} \cite{zapryanov_automatic_2012} presume che la riflettanza media di una scena sia neutra (grigia). Matematicamente, stima l'illuminante come:
 
-Sono state proposte diverse varianti per rendere gli approcci classici più robusti. Weng \textit{et al.} hanno introdotto un filtro che rimuove i pixel altamente saturi prima di applicare Gray-World, riducendo gli errori in scene con colori dominanti \cite{weng_novel_2005}. Thai \textit{et al.} hanno invece proposto un metodo basato sulla ``grigiezza'' dei pixel in YCbCr, pesando maggiormente quelli vicini al grigio neutro \cite{thai_fast_2016}. 
+\begin{equation}
+\mathbf{e} = \left( \frac{1}{N} \sum_{x} I_R(x), \frac{1}{N} \sum_{x} I_G(x), \frac{1}{N} \sum_{x} I_B(x) \right)
+\label{eq:gray_world}
+\end{equation}
 
-Un approccio locale è \textbf{GCP-AWB} (Gray Color Points), che ricerca aree neutre con deviazione minima nella crominanza U-V e calcola da esse l'illuminante \cite{huo_robust_2006}. Questi metodi mostrano come estensioni relativamente semplici possano migliorare robustezza e adattabilità in scenari complessi.
+dove $I_c(x)$ rappresenta il valore del pixel $x$ nel canale colore $c \in \{R, G, B\}$ e $N$ è il numero totale di pixel. I canali vengono quindi bilanciati normalizzando rispetto al canale verde:
 
-\section{Metodi Moderni Non-Deep}
+\begin{equation}
+\mathbf{k} = \left( \frac{e_G}{e_R}, 1, \frac{e_G}{e_B} \right)
+\end{equation}
 
-Algoritmi più recenti hanno riformulato il problema nel dominio delle frequenze. \textbf{Fast Fourier Color Constancy (FFCC)} rappresenta l'illuminante nello spazio log-croma e lo stima attraverso convoluzione veloce, ottenendo alta accuratezza e velocità \cite{barron_fast_2017}. Inoltre, FFCC introduce un meccanismo di filtraggio temporale che lo rende adatto alle sequenze video, riducendo il flickering fra fotogrammi.
+Questo approccio è veloce ($O(N)$) ma fallisce in scene con dominanza cromatica o distribuzione non uniforme dei colori.
 
-La sua estensione, \textbf{Integral FFCC (IFFCC)}, affronta scenari \textit{spazialmente variabili}, producendo mappe di illuminazione locali tramite istogrammi integrali pur mantenendo l'elaborazione in tempo reale \cite{wei_integral_2025}. Questo rende IFFCC particolarmente adatto a scene complesse e pipeline video.
+\subsection{White-Patch (Max-RGB)}
+
+Il metodo \textbf{White-Patch} \cite{zapryanov_automatic_2012} assume che il pixel più luminoso nell'immagine corrisponda a una superficie bianca o speculare che riflette direttamente l'illuminante:
+
+\begin{equation}
+\mathbf{e} = \left( \max_x I_R(x), \max_x I_G(x), \max_x I_B(x) \right)
+\label{eq:white_patch}
+\end{equation}
+
+Questo metodo è estremamente efficiente ma sensibile al rumore e agli outlier. Richiede la presenza di superfici bianche o speculari nella scena per funzionare correttamente.
+
+\subsection{Shades-of-Gray}
+
+\textbf{Shades-of-Gray} \cite{zapryanov_automatic_2012} generalizza sia Gray-World che White-Patch utilizzando la norma di Minkowski di ordine $p$:
+
+\begin{equation}
+\mathbf{e} = \left( \left( \frac{1}{N} \sum_{x} I_R(x)^p \right)^{1/p}, \left( \frac{1}{N} \sum_{x} I_G(x)^p \right)^{1/p}, \left( \frac{1}{N} \sum_{x} I_B(x)^p \right)^{1/p} \right)
+\label{eq:shades_of_gray}
+\end{equation}
+
+dove:
+- Per $p = 1$ si riduce a Gray-World
+- Per $p \to \infty$ converge a White-Patch
+- Valori intermedi (tipicamente $p \in [2, 6]$) offrono un compromesso tra robustezza e accuratezza
+
+\subsection{Gray-Edge}
+
+Il metodo \textbf{Gray-Edge} \cite{van_de_weijer_edge-based_2007} sposta l'attenzione dai valori assoluti dei pixel ai gradienti dell'immagine, assumendo che la media delle differenze di colore sui bordi sia acromatica:
+
+\begin{equation}
+\mathbf{e} = \left( \left( \frac{1}{N} \sum_{x} |\nabla^n I_R(x)|^p \right)^{1/p}, \left( \frac{1}{N} \sum_{x} |\nabla^n I_G(x)|^p \right)^{1/p}, \left( \frac{1}{N} \sum_{x} |\nabla^n I_B(x)|^p \right)^{1/p} \right)
+\label{eq:gray_edge}
+\end{equation}
+
+dove $\nabla^n$ rappresenta la derivata di ordine $n$ (tipicamente $n \in \{1, 2\}$) e $p$ è il parametro della norma di Minkowski. Per $n = 0$ si riduce a Shades-of-Gray. Questo approccio è più robusto alle variazioni di illuminazione locale poiché i gradienti sono meno influenzati dall'intensità assoluta dell'illuminazione.
+
+\subsection{Approcci Probabilistici e Gamut Mapping}
+
+Metodi più sofisticati includono il \textbf{gamut mapping} (Forsyth), che modella l'insieme dei colori osservabili sotto diversi illuminanti, e approcci bayesiani \cite{gehler_bayesian_2008} che incorporano prior statistici sulla distribuzione degli illuminanti e delle riflettanze. Questi metodi offrono migliore accuratezza ma richiedono maggiore complessità computazionale e dataset di training.
+
+\section{Estensioni e Varianti dei Metodi Tradizionali}
+
+\subsection{Metodi con Pre-filtraggio}
+
+Weng \textit{et al.} \cite{weng_novel_2005} hanno introdotto l'algoritmo AGWM (Adaptive Gray World Method) che rimuove i pixel altamente saturi prima di applicare Gray-World:
+
+\begin{equation}
+\mathbf{e} = \frac{1}{|\Omega|} \sum_{x \in \Omega} I(x), \quad \Omega = \{x : S(x) < \tau\}
+\end{equation}
+
+dove $S(x)$ è la saturazione del pixel e $\tau$ è una soglia adattiva. Questo riduce gli errori in scene con colori dominanti.
+
+\subsection{Metodi basati su Greyness}
+
+Thai \textit{et al.} \cite{thai_fast_2016} hanno proposto un metodo che pesa i pixel in base alla loro "grigiezza" nello spazio YCbCr:
+
+\begin{equation}
+w(x) = \exp\left(-\alpha \cdot (|Cb(x)| + |Cr(x)|)\right)
+\end{equation}
+
+dove $\alpha$ controlla la selettività del peso. I pixel più vicini al grigio neutro contribuiscono maggiormente alla stima dell'illuminante.
+
+\subsection{Gray Color Points (GCP-AWB)}
+
+L'approccio \textbf{GCP-AWB} \cite{huo_robust_2006} identifica punti grigi locali con minima deviazione nella crominanza:
+
+\begin{equation}
+\mathcal{G} = \{x : \sqrt{U(x)^2 + V(x)^2} < \theta\}
+\end{equation}
+
+dove $(U, V)$ sono le componenti di crominanza e $\theta$ è una soglia adattiva. L'illuminante viene stimato mediando solo sui punti in $\mathcal{G}$, migliorando la robustezza in scene complesse.
+
+\section{Metodi Tradizionali Moderni}
+
+\subsection{Fast Fourier Color Constancy (FFCC)}
+
+\textbf{Fast Fourier Color Constancy (FFCC)} \cite{barron_fast_2017} rappresenta un approccio innovativo che riformula completamente il problema della stima dell'illuminante. Invece di operare direttamente nello spazio RGB, FFCC trasforma l'immagine nello spazio log-croma, dove i valori dei pixel sono rappresentati come logaritmi dei rapporti tra i canali colore ($u = \log(R/G)$ e $v = \log(B/G)$). In questo spazio bidimensionale, che ha la topologia di un toro per la sua periodicità, il problema di stima dell'illuminante diventa un task di localizzazione spaziale.
+
+L'intuizione chiave è che l'istogramma dei colori nello spazio log-croma contiene informazioni sufficienti per identificare l'illuminante. FFCC sfrutta la convoluzione nel dominio delle frequenze tramite FFT per accelerare drasticamente il processo di matching tra l'istogramma osservato e i pattern appresi durante il training. Questo approccio permette di ottenere prestazioni superiori del 13-20\% rispetto ai metodi precedenti, mentre è 250-3000 volte più veloce, raggiungendo circa 700 fps su dispositivi mobili.
+
+Per le applicazioni video, FFCC incorpora anche un meccanismo di smoothing temporale che riduce il flickering mantenendo coerenza tra frame consecutivi. Il metodo produce una distribuzione posteriore completa sugli illuminanti piuttosto che una singola stima puntuale, permettendo analisi più sofisticate dell'incertezza.
+
+\subsection{Integral FFCC (IFFCC)}
+
+\textbf{Integral FFCC (IFFCC)} \cite{wei_integral_2025} estende il framework di FFCC per gestire scene con illuminazione spazialmente variabile, un problema significativamente più complesso. Mentre FFCC assume un singolo illuminante globale, IFFCC riconosce che le scene reali spesso contengono multiple sorgenti luminose che influenzano diverse regioni dell'immagine.
+
+L'innovazione principale di IFFCC sta nell'utilizzo degli istogrammi integrali nello spazio log-croma. Questa struttura dati permette di calcolare efficientemente l'istogramma di qualsiasi regione rettangolare dell'immagine in tempo costante, indipendentemente dalla dimensione della regione. Combinando questa efficienza computazionale con la convoluzione FFT parallelizzata, IFFCC può produrre mappe dense di illuminazione che variano smoothly nello spazio, mantenendo prestazioni real-time anche per immagini ad alta risoluzione.
+
+Il metodo utilizza tecniche di guided filtering per garantire che le transizioni tra regioni con diversi illuminanti siano naturali e coerenti con i bordi dell'immagine. Questo approccio rende IFFCC particolarmente adatto per scene complesse come ambienti interni con illuminazione mista naturale e artificiale.
 
 \section{Approcci di Machine Learning e Deep Learning}
 
-Con l'avvento di dataset calibrati e reti neurali, i metodi basati sull'apprendimento hanno raggiunto prestazioni allo stato dell'arte. Un esempio è \textbf{KNN-WB}, che sfrutta ampie collezioni di immagini correttamente bilanciate per stimare l'illuminante tramite k-nearest neighbors \cite{afifi_deep_2020}. 
+\subsection{K-Nearest Neighbors White Balance (KNN-WB)}
 
-Afifi e Brown hanno introdotto \textbf{Deep WB}, un'architettura encoder-decoder che, data un'immagine sRGB, produce versioni corrette per illuminanti indoor e outdoor, consentendo correzione e editing flessibili \cite{afifi_deep_2020}. Successivamente, \textbf{Deep WB Blending} ha esteso l'approccio a scenari multi-illuminante, fondendo immagini con diversi preset di WB attraverso mappe di peso apprese localmente \cite{afifi_auto_2022}.
+\textbf{KNN-WB} \cite{afifi_deep_2020} utilizza un approccio non parametrico basato su similarità:
 
-Questi metodi mostrano come le reti neurali possano superare le rigide ipotesi dei metodi classici, gestendo sia casi a singolo illuminante che a illuminante misto.
+\begin{equation}
+\mathbf{e} = \sum_{i=1}^{k} w_i \cdot \mathbf{e}_i, \quad w_i = \frac{\exp(-d_i/\sigma)}{\sum_j \exp(-d_j/\sigma)}
+\end{equation}
+
+dove $d_i$ è la distanza tra l'immagine query e la $i$-esima immagine più simile nel dataset, e $\mathbf{e}_i$ è l'illuminante corrispondente.
+
+\subsection{Deep White Balance}
+
+Afifi e Brown hanno introdotto \textbf{Deep WB} \cite{afifi_deep_2020}, un'architettura encoder-decoder che produce direttamente immagini corrette:
+
+\begin{equation}
+I_{\text{corrected}} = f_{\theta}(I_{\text{input}}, \text{mode})
+\end{equation}
+
+dove $f_{\theta}$ è una rete neurale convoluzionale e "mode" specifica il tipo di correzione (indoor/outdoor). L'architettura utilizza skip connections e produce output multi-scala per preservare i dettagli.
+
+\subsection{Deep WB Blending per Multi-Illuminanti}
+
+\textbf{Deep WB Blending} \cite{afifi_auto_2022} affronta scenari multi-illuminante fondendo immagini con diversi preset WB:
+
+\begin{equation}
+I_{\text{out}} = \sum_{i=1}^{n} W_i \odot I_i^{\text{WB}}
+\end{equation}
+
+dove $I_i^{\text{WB}}$ sono versioni dell'immagine con diversi bilanciamenti, $W_i$ sono mappe di peso apprese dalla rete, e $\odot$ denota il prodotto elemento per elemento. Le mappe di peso sono vincolate a sommare a 1 per ogni pixel:
+
+\begin{equation}
+\sum_{i=1}^{n} W_i(x,y) = 1, \quad \forall (x,y)
+\end{equation}
 
 \section{Dataset per la Costanza Cromatica}
+%TODO: aggiungere esempi visivi 
 
-I progressi in questo campo sono stati resi possibili dai dataset annotati, che hanno supportato sia lo sviluppo di nuovi algoritmi sia la loro valutazione comparativa. I dataset differiscono per tipo di scena, numero di immagini, caratteristiche di illuminazione e granularità della ground truth.
+I progressi nel campo sono stati resi possibili dai numerosi dataset annotati. La Tabella \ref{tab:datasets} fornisce una panoramica completa dei principali dataset disponibili, mentre la Tabella \ref{tab:algorithms} riassume le caratteristiche degli algoritmi discussi.
 
-Il \textbf{Color Checker} di Gehler-Shi \cite{gehler_bayesian_2008} e \textbf{Cube++} \cite{ershov_cube_2020} contengono scene indoor e outdoor con un unico illuminante noto e forniscono ground truth tramite una carta Macbeth ColorChecker posizionata nelle scene. Questi dataset sono stati a lungo un riferimento standard per il benchmarking di metodi tradizionali e ML.
+\subsection{Dataset a Singolo Illuminante}
 
-Il \textbf{NUS 8-Camera} \cite{cheng_illuminant_2014} aumenta la diversità catturando le stesse scene con otto fotocamere diverse, permettendo di studiare la variabilità inter-camera e la robustezza degli algoritmi.
+I dataset classici come \textbf{Color Checker} (Gehler-Shi) \cite{gehler_bayesian_2008} e \textbf{Cube++} \cite{ershov_cube_2020} contengono scene con un unico illuminante globale, utilizzando una carta Macbeth ColorChecker per il ground truth. Il \textbf{NUS 8-Camera} \cite{cheng_illuminant_2014} aumenta la diversità catturando le stesse scene con otto fotocamere diverse, permettendo studi sulla variabilità inter-camera.
 
-L'\textbf{INTEL-TAU} \cite{laakom_intel-tau_2020} include oltre 7000 immagini ad alta risoluzione acquisite con diverse fotocamere e arricchite con annotazioni aggiuntive, come color shading e spettri luminosi. La sua dimensione e ricchezza di annotazioni lo rendono un benchmark di riferimento per i metodi basati su apprendimento.
+L'\textbf{INTEL-TAU} \cite{laakom_intel-tau_2020}, con oltre 7000 immagini ad alta risoluzione, è attualmente uno dei più grandi dataset disponibili e include annotazioni aggiuntive come color shading e spettri luminosi, rendendolo ideale per l'addestramento di metodi deep learning.
 
-Per scenari multi-illuminante, i dataset includono \textbf{Beigpour Multi-Illuminant} \cite{beigpour_multi-illuminant_2013}, che fornisce annotazioni per-pixel di riflettanza e sorgenti in ambienti di laboratorio; \textbf{SFU Gray Sphere} e \textbf{Flying Gray Ball} \cite{ciurea_large_2003,aghaei_flying_2020}, che usano oggetti di riferimento grigi per stimare più illuminanti in scene reali; e infine \textbf{LSMI} \cite{kim_large_2021}, oggi il dataset più completo per il problema multi-illuminante. LSMI contiene quasi 7500 immagini con ground truth per-pixel sotto differenti illuminazioni e dispositivi, fornendo mappe dettagliate di miscelazione degli illuminanti. Questo dataset è diventato essenziale per l'addestramento e la valutazione di metodi spazialmente variabili e deep learning.
+\subsection{Dataset Multi-Illuminante}
 
-In sintesi, i dataset disponibili coprono un ampio spettro di complessità: da immagini a singolo illuminante con annotazioni globali a dataset multi-illuminante con ground truth densi, offrendo una solida base per far avanzare lo stato dell'arte.
+Per scenari più complessi con illuminazione mista, sono disponibili dataset specializzati:
 
-\section{Conclusioni}
+- \textbf{Beigpour Multi-Illuminant} \cite{beigpour_multi-illuminant_2013}: fornisce annotazioni per-pixel di riflettanza, shading e sorgenti in ambienti controllati
+- \textbf{SFU Gray Sphere} e \textbf{Flying Gray Ball} \cite{ciurea_large_2003,aghaei_flying_2020}: utilizzano oggetti di riferimento grigi per stimare illuminanti multipli in scene reali
+- \textbf{LSMI} \cite{kim_large_2021}: il dataset più completo per multi-illuminanti, con quasi 7500 immagini e ground truth per-pixel dettagliato
 
-Lo stato dell'arte nel bilanciamento del bianco mostra un'evoluzione da metodi semplici e veloci basati su ipotesi statistiche ad approcci guidati dai dati capaci di gestire video e scenari multi-illuminante. La sfida attuale è conciliare accuratezza, robustezza e stabilità temporale con l'efficienza computazionale richiesta dalle applicazioni real-time.
+\section{Considerazioni e Scelta del Dataset}\label{sec:scelta_dataset}
+%TODO: subsection appprofondita su LSMI 
 
+L'analisi dello stato dell'arte evidenzia un'evoluzione continua dai metodi statistici tradizionali verso approcci data-driven sempre più sofisticati. Mentre i metodi classici mantengono la loro rilevanza per efficienza e interpretabilità, gli approcci basati su deep learning dominano in termini di accuratezza, specialmente in scenari complessi con illuminazione multipla.
+
+Per il presente lavoro di tesi, la scelta del dataset è ricaduta su \textbf{LSMI} (Large Scale Multi-Illuminant) \cite{kim_large_2021} per diverse ragioni fondamentali che lo rendono il più adatto agli obiettivi della ricerca:
+
+\begin{itemize}
+\item \textbf{Completezza e dimensione}: Con quasi 7500 immagini, LSMI è attualmente il dataset multi-illuminante più ampio disponibile pubblicamente, fornendo una base statistica robusta per l'addestramento e la valutazione degli algoritmi.
+
+\item \textbf{Ground truth denso per-pixel}: A differenza di altri dataset che forniscono solo annotazioni globali o sparse, LSMI offre mappe di illuminazione complete per ogni pixel. Questa caratteristica è cruciale per il nostro approccio, in quanto permette di generare sequenze video artificiali mantenendo ground truth densi e accurati per ogni frame.
+
+\item \textbf{Diversità delle sorgenti}: Le immagini sono state acquisite con tre dispositivi diversi (Samsung Note20 Ultra, Sony $\alpha$9, Nikon D810), garantendo variabilità nelle caratteristiche dei sensori e robustezza cross-camera degli algoritmi sviluppati.
+
+\item \textbf{Mappe di miscelazione degli illuminanti}: Il dataset include informazioni dettagliate su come multiple sorgenti luminose si combinano in ogni punto dell'immagine, permettendo una modellazione realistica delle transizioni di illuminazione nelle sequenze video generate.
+\end{itemize}
+
+La disponibilità di ground truth densi è particolarmente critica per il nostro obiettivo di estendere i metodi di stima dell'illuminante globale a scenari locali e temporalmente coerenti. La possibilità di creare video artificiali con annotazioni complete per ogni pixel e frame rappresenta un vantaggio unico che nessun altro dataset attualmente offre, rendendo LSMI la scelta naturale per questo lavoro di ricerca.
+
+%TODO: aggiustare tabelle (girare e sistemare)
+\clearpage
+\thispagestyle{empty}
+\begin{landscape}
+\vspace*{\fill}
+\begin{center}
+\input{tables/algorithms.tex}\label{tab:algorithms}
+\input{tables/datasets.tex}\label{tab:datasets}
+\end{center}
+\vspace*{\fill}
+\end{landscape}
+
+%TODO: Assenza di dataset video spatially varing
