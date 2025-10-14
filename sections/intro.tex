@@ -1,3 +1,67 @@
 \chapter{Introduzione}\label{chap:introduction} % (fold)
 
+\section{Contesto e Motivazioni}
+
+La percezione visiva umana possiede una capacità straordinaria nota come \emph{costanza cromatica}: la facoltà di riconoscere i colori degli oggetti come invarianti rispetto alle condizioni di illuminazione della scena. Quando osserviamo una mela rossa, la percepiamo come tale sia alla luce del sole che sotto una lampadina incandescente, nonostante la composizione spettrale della luce riflessa vari significativamente. Questo fenomeno, apparentemente banale per il sistema visivo umano, rappresenta una delle sfide più complesse e ancora irrisolte nella visione computazionale.
+
+I sensori digitali, privi dei sofisticati meccanismi di adattamento del sistema visivo biologico, registrano fedelmente la luce riflessa dagli oggetti modulata dallo spettro dell'illuminante. Un foglio bianco fotografato sotto luce blu apparirà blu nell'immagine catturata, e un oggetto grigio sotto luce arancione verrà registrato come arancione. Questa distorsione cromatica compromette l'interpretabilità delle immagini e la performance di task di alto livello come riconoscimento di oggetti, segmentazione semantica e tracking visivo, che si basano sull'assunzione di invarianza cromatica degli oggetti.
+
+Il problema della \emph{stima dell'illuminante}---determinare la composizione spettrale della sorgente luminosa che illumina una scena---costituisce il primo passo verso la correzione di questa distorsione. Una volta stimato l'illuminante, è possibile applicare trasformazioni cromatiche che recuperano i colori "veri" degli oggetti, ovvero quelli che sarebbero osservati sotto una condizione di illuminazione canonica (tipicamente luce bianca neutra). Questo processo, noto come \emph{bilanciamento del bianco} (white balance) o \emph{color constancy}, è fondamentale in applicazioni che spaziano dalla fotografia computazionale al rendering realistico, dalla diagnostica medica ai sistemi di sorveglianza e guida autonoma.
+
+\section{Evoluzione degli Approcci alla Stima dell'Illuminante}
+
+La ricerca sulla costanza cromatica ha conosciuto un'evoluzione continua negli ultimi decenni. I primi approcci si basavano su ipotesi statistiche semplici ma efficaci: l'algoritmo \textbf{Gray-World} assume che la media dei colori in una scena naturale sia acromatica, mentre \textbf{White-Patch} presume l'esistenza di superfici bianche o speculari che riflettono direttamente l'illuminante. Questi metodi, pur nella loro semplicità, hanno rappresentato la base concettuale su cui si è costruita la ricerca successiva e rimangono ancora oggi rilevanti per la loro efficienza computazionale.
+
+L'evoluzione verso metodi più sofisticati ha portato a generalizzazioni come \textbf{Shades-of-Gray} e \textbf{Gray-Edge}, che operano sui gradienti dell'immagine piuttosto che sui valori assoluti, migliorando la robustezza alle variazioni di illuminazione locale. L'introduzione di approcci probabilistici e basati su learning, culminata in metodi come \textbf{Fast Fourier Color Constancy (FFCC)} e \textbf{Deep White Balance}, ha segnato un cambio di paradigma: anziché assumere ipotesi statistiche universali, questi algoritmi apprendono pattern direttamente dai dati, adattandosi alla diversità delle scene naturali.
+
+Tuttavia, la stragrande maggioranza degli algoritmi sviluppati fino ad oggi condivide un'assunzione fondamentale e limitante: \emph{l'illuminazione della scena è spazialmente uniforme}. Ogni immagine viene caratterizzata da un singolo vettore illuminante globale, che si presume valido per tutti i pixel. Questa semplificazione è ragionevole in scenari controllati---come studi fotografici con illuminazione calibrata---ma risulta inadeguata per scene reali complesse.
+
+\section{Dalla Stima Globale alla Stima Locale}
+
+Nelle scene reali, l'illuminazione è raramente uniforme. Ambienti interni presentano tipicamente combinazioni di luce naturale (finestre) e artificiale (lampade con temperature di colore diverse). Scene outdoor includono regioni in piena luce solare e altre in ombra, con spettri luminosi radicalmente diversi. Eventi sportivi in stadi illuminati da riflettori presentano illuminazione altamente non uniforme nello spazio. In tutti questi casi, l'assunzione di illuminante globale introduce errori sistematici: regioni della scena caratterizzate da illuminanti diversi vengono corrette con lo stesso fattore di bilanciamento, producendo artefatti cromatici visibili e compromettendo l'efficacia della correzione.
+
+Questa limitazione ha motivato lo sviluppo di approcci di \emph{stima locale dell'illuminante}, che producono mappe spazialmente dense assegnando un vettore illuminante a ogni pixel (o regione) dell'immagine. Dataset specializzati come \textbf{LSMI} (Large Scale Multi-Illuminant) \cite{kim_large_2021}, che forniscono annotazioni ground truth per-pixel in scene con illuminazione multipla, hanno reso possibile la valutazione quantitativa di tali metodi. Tuttavia, anche questi approcci avanzati operano su immagini statiche, ignorando la dimensione temporale presente in applicazioni video.
+
+\section{Il Gap Metodologico: Assenza di Dataset Video}
+
+L'estensione della stima dell'illuminante a sequenze video introduce nuove sfide. Le applicazioni moderne---videosorveglianza, streaming video, realtà aumentata, cinematografia computazionale---richiedono non solo accuratezza spaziale ma anche \emph{coerenza temporale}. Stimare l'illuminante frame-by-frame in modo indipendente produce inevitabilmente \emph{flickering}: fluttuazioni percettibili nella correzione cromatica tra frame consecutivi, anche quando l'illuminazione fisica della scena rimane stabile.
+
+Nonostante la rilevanza applicativa, allo stato attuale \textbf{non esistono dataset pubblici di sequenze video annotate con ground truth denso per illuminazione spazialmente variabile}. Le ragioni sono principalmente pratiche: l'annotazione frame-by-frame richiederebbe il posizionamento di color checker visibili e stabili in ogni frame, con un costo temporale ed economico proibitivo. La presenza di movimento di camera, occlusioni dinamiche e variazioni temporali dell'illuminazione introduce ulteriori complessità metodologiche che rendono l'acquisizione diretta estremamente difficoltosa.
+
+Questo gap rappresenta un ostacolo significativo per lo sviluppo e la valutazione di algoritmi di color constancy applicati a scenari video realistici. La disponibilità di dataset video con annotazioni dense permetterebbe non solo di valutare quantitativamente la performance degli algoritmi esistenti, ma anche di sviluppare metodi specificamente progettati per sfruttare la coerenza temporale e migliorare la stabilità delle stime.
+
+\section{Obiettivi e Contributi della Tesi}
+
+Il presente lavoro di tesi si propone di affrontare il problema dell'estensione di metodi per la stima dell'illuminante globale su singole immagini a \emph{locale su sequenze video}, sviluppando una metodologia completa che comprende:
+
+\begin{enumerate}
+    \item \textbf{Generazione di un dataset video con annotazioni dense}: sfruttando il dataset LSMI e l'effetto Ken Burns, vengono prodotte sequenze video artificiali che mantengono ground truth per-pixel per ogni frame. Questo approccio permette di superare i vincoli proibitivi dell'acquisizione e annotazione manuale, fornendo uno strumento prezioso per la valutazione di algoritmi. Sebbene questa tesi si concentri sull'estensione di metodi tradizionali, il dataset generato è progettato per essere compatibile con framework di deep learning e può costituire una risorsa utile per lo sviluppo futuro di metodi neurali per la stima dell'illuminante su video.
+
+    \item \textbf{Estensione spaziale di algoritmi tradizionali}: quattro metodi classici di color constancy (Gray-World, White-Patch, Shades of Gray, Gray-Edge) vengono adattati per produrre mappe spazialmente dense invece di stime globali. Sono state sviluppate due strategie complementari---patch-based e sliding window---che offrono diversi trade-off tra risoluzione spaziale, robustezza statistica ed efficienza computazionale.
+
+    \item \textbf{Estensione temporale e filtraggio}: tecniche di smoothing temporale (Exponential Moving Average e filtro Gaussiano) vengono integrate nella pipeline per ridurre il flickering e migliorare la coerenza tra frame consecutivi, preservando al contempo la capacità di adattarsi a variazioni reali dell'illuminazione.
+
+    \item \textbf{Valutazione sperimentale sistematica}: un framework di benchmark automatizzato permette di esplorare lo spazio delle configurazioni possibili (metodo base, modalità spaziale, strategia temporale, iperparametri) e identificare le combinazioni ottimali per diversi scenari applicativi.
+\end{enumerate}
+
+Il contributo principale di questa tesi non risiede nell'introduzione di nuovi algoritmi di stima dell'illuminante, ma nella \emph{sistematizzazione metodologica} dell'estensione di approcci consolidati a contesti spazialmente variabili e temporalmente coerenti. L'obiettivo è fornire una comprensione approfondita di come algoritmi tradizionali, progettati per stime globali su immagini statiche, possano essere adattati efficacemente a scenari video con illuminazione multipla, quali siano i trade-off coinvolti, e quali configurazioni siano preferibili in funzione dei vincoli applicativi.
+
+\section{Struttura della Tesi}
+
+Il documento è organizzato come segue:
+
+\begin{itemize}
+    \item \textbf{Capitolo~\ref{ch:soa}---Stato dell'Arte}: presenta una panoramica completa degli algoritmi di bilanciamento automatico del bianco, dai metodi tradizionali basati su ipotesi statistiche agli approcci moderni basati su deep learning. Vengono discussi i principali dataset disponibili per la valutazione, con particolare enfasi sul dataset LSMI e sulle ragioni della sua scelta per questo lavoro.
+
+    \item \textbf{Capitolo~\ref{chap:dataset_generation}---Generazione del Dataset}: descrive in dettaglio il processo di generazione dei video tramite effetto Ken Burns con Perlin Noise.
+
+    \item \textbf{Capitolo~\ref{chap:illuminant_estimation}---Metodi per la Stima dell'Illuminante}: presenta l'architettura modulare della pipeline di stima dell'illuminante, e le tecniche di estensione spaziale (grid e sliding window) e temporale (EMA e Gaussiano) implementate.
+
+    \item \textbf{Capitolo~\ref{chap:testing}---Testing e Valutazione}: presenta i risultati sperimentali ottenuti valutando diverse configurazioni della pipeline sul dataset video generato. Vengono analizzate le performance in termini di accuratezza (errore angolare medio/mediano), efficienza computazionale (tempi di esecuzione per frame) e robustezza alle variazioni dei parametri.
+
+    \item \textbf{Capitolo finale---Conclusioni}: riassume i principali risultati, discute le limitazioni dell'approccio proposto e delinea possibili direzioni future per la ricerca sulla stima dell'illuminante in contesti spazialmente variabili e temporalmente dinamici.
+\end{itemize}
+
+Il codice sviluppato per la generazione del dataset, l'implementazione della pipeline e la valutazione sperimentale è disponibile pubblicamente, con l'obiettivo di facilitare la riproducibilità dei risultati e fornire uno strumento utile alla comunità di ricerca per ulteriori sviluppi nel campo della costanza cromatica su video.
+
 % chapter introduction (end)

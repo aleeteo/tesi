@@ -1,0 +1,137 @@
+\chapter{Parametri di Configurazione Implementativi}\label{app:params}
+
+Questo capitolo riporta i valori dei parametri di configurazione utilizzati nell'implementazione dell'approccio descritto nei Capitoli \ref{chap:dataset_generation}, \ref{chap:illuminant_estimation} e \ref{chap:testing}. I valori riportati rappresentano le scelte di default adottate nel codice, ottimizzate empiricamente durante la fase di sviluppo.
+
+\section{Parametri di Generazione Video}\label{app:video_params}
+
+La Tabella \ref{tab:video_params} riassume i parametri utilizzati per la generazione delle sequenze video mediante l'effetto Ken Burns con perturbazioni Perlin Noise (cfr. Sezione \ref{sec:generazione_video}).
+
+\begin{table}[htbp]
+\centering
+\caption{Parametri di default per la generazione video}
+\label{tab:video_params}
+\begin{tabular}{llcp{6cm}}
+\toprule
+\textbf{Parametro} & \textbf{Simbolo} & \textbf{Valore} & \textbf{Descrizione} \\
+\midrule
+Zoom iniziale/finale & $z_{\text{start}}, z_{\text{end}}$ & 2.0 & Fattore di ingrandimento costante \\
+Frame totali & $N_{\text{frames}}$ & 60 & Numero di frame per video \\
+Intensità rumore & $\sigma_{\text{noise}}$ & 0.9 & Ampiezza perturbazione Perlin (\%) \\
+Velocità rumore & $v_{\text{noise}}$ & 0.2 & Frequenza temporale Perlin \\
+Interpolazione pan & -- & linear & Tipo di interpolazione per panning \\
+Interpolazione zoom & -- & ease\_in\_out & Tipo di interpolazione per zoom \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Parametri degli Estimatori di Illuminante}\label{app:estimator_params}
+
+\subsection{Parametri degli Algoritmi Tradizionali}
+
+La Tabella \ref{tab:traditional_params} riporta i parametri specifici per gli algoritmi di stima tradizionali (cfr. Sezione \ref{sec:traditional_methods}).
+
+\begin{table}[htbp]
+\centering
+\caption{Parametri di default per gli estimatori tradizionali}
+\label{tab:traditional_params}
+\begin{tabular}{llcp{5.5cm}}
+\toprule
+\textbf{Algoritmo} & \textbf{Parametro} & \textbf{Valore} & \textbf{Descrizione} \\
+\midrule
+White-Patch & percentile & 95.0 & Percentile invece di max assoluto \\
+Shades-of-Gray & $p$ & 6.0 & Ordine norma Minkowski \\
+Gray-Edge & $p$ & 6.0 & Ordine norma Minkowski \\
+Gray-Edge & $n$ & 1 & Ordine derivata (1 o 2) \\
+Gray-Edge & $\sigma$ & 1.0 & Deviazione std. Gaussian blur \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Parametri per l'Estensione Spaziale}
+
+La Tabella \ref{tab:spatial_params} riassume i parametri per le modalità di stima spaziale grid e sliding window (cfr. Sezione \ref{sec:estensione_locale}).
+
+\begin{table}[htbp]
+\centering
+\caption{Parametri di default per l'estensione spaziale}
+\label{tab:spatial_params}
+\begin{tabular}{llcp{5.5cm}}
+\toprule
+\textbf{Modalità} & \textbf{Parametro} & \textbf{Valore} & \textbf{Descrizione} \\
+\midrule
+\multicolumn{4}{l}{\textit{Modalità Grid}} \\
+\midrule
+Grid & patch & 32 & Dimensione patch (pixel) \\
+\midrule
+\multicolumn{4}{l}{\textit{Modalità Sliding Window}} \\
+\midrule
+Conv & kernel & mean & Tipo kernel (mean/gaussian) \\
+Conv & win & 31 & Dimensione finestra (pixel) \\
+Conv & stride & 1 & Passo di sottocampionamento \\
+Conv & $\sigma$ & win/6 & Sigma per kernel gaussiano \\
+\midrule
+\multicolumn{4}{l}{\textit{Parametri Comuni}} \\
+\midrule
+Entrambe & mask\_threshold & 0.5 & Soglia binarizzazione maschera \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Parametri di Filtraggio Temporale}\label{app:temporal_params}
+
+La Tabella \ref{tab:temporal_params} elenca i parametri utilizzati per il filtraggio temporale delle mappe di illuminazione (cfr. Sezione \ref{sec:estensione_temporale}).
+
+\begin{table}[htbp]
+\centering
+\caption{Parametri di default per il filtraggio temporale}
+\label{tab:temporal_params}
+\begin{tabular}{llcp{5.5cm}}
+\toprule
+\textbf{Filtro} & \textbf{Parametro} & \textbf{Valore} & \textbf{Descrizione} \\
+\midrule
+EMA & $\alpha$ & 0.6 & Peso frame corrente in [0,1] \\
+\midrule
+Gaussian & window & 5 & Dimensione finestra temporale \\
+Gaussian & $\sigma_t$ & window/3.0 & Deviazione std. temporale \\
+Gaussian & padding & edge & Modalità padding ai bordi \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Parametri di Benchmark}\label{app:benchmark_params}
+
+La Tabella \ref{tab:benchmark_params} descrive i livelli di densità utilizzati per l'esplorazione dello spazio dei parametri durante il benchmark (cfr. Sezione \ref{sec:pipeline_finale}).
+
+\begin{table}[htbp]
+\centering
+\caption{Livelli di densità per grid search parametrica}
+\label{tab:benchmark_params}
+\begin{tabular}{lcp{7cm}}
+\toprule
+\textbf{Livello} & \textbf{N. Config} & \textbf{Descrizione} \\
+\midrule
+low & $\sim$10 & Esplorazione grossolana con pochi valori chiave \\
+medium & $\sim$50 & Esplorazione bilanciata per test preliminari \\
+high & $\sim$200 & Esplorazione fine per ottimizzazione accurata \\
+massive & $\sim$1000 & Esplorazione esaustiva per analisi completa \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Note Implementative}\label{app:implementation_notes}
+
+\subsection{Normalizzazione}
+Tutti i vettori di illuminante stimati vengono normalizzati con norma L2 prima del confronto con il ground truth:
+\begin{equation}
+\hat{\mathbf{e}} = \frac{\mathbf{e}}{||\mathbf{e}||_2 + \epsilon}
+\end{equation}
+dove $\epsilon = 10^{-8}$ previene divisioni per zero.
+
+\subsection{Formato Maschere}
+Le maschere di validità sono gestite come array a 3 canali (H,W,3) in virgola mobile [0,1], con replica del canale monocromatico per uniformità con le immagini RGB. Un pixel è considerato valido se la media sui 3 canali supera \texttt{mask\_threshold}.
+
+\subsection{Gestione Errori}
+Per patch o regioni completamente mascherate, la pipeline utilizza un fallback a Gray-World globale o, in alternativa, restituisce un vettore neutro $[1/\sqrt{3}, 1/\sqrt{3}, 1/\sqrt{3}]$.
+
+\subsection{Riproducibilità}
+La generazione dei seed per i segmenti video utilizza \texttt{np.random.SeedSequence.spawn()} per garantire riproducibilità deterministica anche in presenza di parallelizzazione. Dato un seed base $s_0$, ogni segmento riceve un seed child unico ma deterministico.

@@ -10,6 +10,9 @@
 \usepackage{microtype}
 \usepackage{setspace}
 
+% -- Rimuovi numeri pagina dalle pagine vuote --
+\usepackage{emptypage}
+
 % -- Matematica (AGGIUNGI QUESTI) --
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -47,5 +50,12 @@
 
 % -- Citazioni e bibliografia --
 \usepackage{csquotes}
-\usepackage[backend=biber,style=numeric]{biblatex}
+\usepackage[backend=biber,style=numeric,urldate=long]{biblatex}
 \addbibresource{Tesi-triennale.bib}
+
+% Rimuovi la data di accesso (urldate) dalla bibliografia
+\AtEveryBibitem{\clearfield{urlyear}}
+
+%NOTE: da rimuovere prima di consegnare
+\usepackage{lineno}
+\linenumbers

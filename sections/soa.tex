@@ -33,7 +33,7 @@ Il metodo \textbf{White-Patch} \cite{zapryanov_automatic_2012} assume che il pix
 \label{eq:white_patch}
 \end{equation}
 
-Questo metodo è estremamente efficiente ma sensibile al rumore e agli outlier. Richiede la presenza di superfici bianche o speculari nella scena per funzionare correttamente.
+Questo metodo è estremamente efficiente ma sensibile al rumore e agli outlier.\footnote{Nell'implementazione pratica, si utilizza il 95$^\circ$ percentile invece del massimo assoluto per aumentare la robustezza agli outlier e ai pixel affetti da rumore del sensore.} Richiede la presenza di superfici bianche o speculari nella scena per funzionare correttamente.
 
 \subsection{Shades-of-Gray}
 
@@ -169,10 +169,11 @@ Per scenari più complessi con illuminazione mista, sono disponibili dataset spe
 - \textbf{SFU Gray Sphere} e \textbf{Flying Gray Ball} \cite{ciurea_large_2003,aghaei_flying_2020}: utilizzano oggetti di riferimento grigi per stimare illuminanti multipli in scene reali
 - \textbf{LSMI} \cite{kim_large_2021}: il dataset più completo per multi-illuminanti, con quasi 7500 immagini e ground truth per-pixel dettagliato
 
-\section{Considerazioni e Scelta del Dataset}\label{sec:scelta_dataset}
-%TODO: subsection appprofondita su LSMI 
+\section{Considerazioni e Scelta del dataset}\label{sec:scelta_dataset}
 
 L'analisi dello stato dell'arte evidenzia un'evoluzione continua dai metodi statistici tradizionali verso approcci data-driven sempre più sofisticati. Mentre i metodi classici mantengono la loro rilevanza per efficienza e interpretabilità, gli approcci basati su deep learning dominano in termini di accuratezza, specialmente in scenari complessi con illuminazione multipla.
+
+\subsection{Il Dataset LSMI in Dettaglio}
 
 Per il presente lavoro di tesi, la scelta del dataset è ricaduta su \textbf{LSMI} (Large Scale Multi-Illuminant) \cite{kim_large_2021} per diverse ragioni fondamentali che lo rendono il più adatto agli obiettivi della ricerca:
 
@@ -188,16 +189,19 @@ Per il presente lavoro di tesi, la scelta del dataset è ricaduta su \textbf{LSM
 
 La disponibilità di ground truth densi è particolarmente critica per il nostro obiettivo di estendere i metodi di stima dell'illuminante globale a scenari locali e temporalmente coerenti. La possibilità di creare video artificiali con annotazioni complete per ogni pixel e frame rappresenta un vantaggio unico che nessun altro dataset attualmente offre, rendendo LSMI la scelta naturale per questo lavoro di ricerca.
 
-%TODO: aggiustare tabelle (girare e sistemare)
-\clearpage
-\thispagestyle{empty}
-\begin{landscape}
-\vspace*{\fill}
-\begin{center}
-\input{tables/algorithms.tex}\label{tab:algorithms}
-\input{tables/datasets.tex}\label{tab:datasets}
-\end{center}
-\vspace*{\fill}
-\end{landscape}
+Dal punto di vista tecnico, il dataset è composto da 7491 immagini acquisite in 307 scene diverse, ciascuna contenente da 2 a 5 illuminanti distinti. Il processo di acquisizione prevede il posizionamento di multiple carte ColorChecker in regioni della scena caratterizzate da diversa predominanza di illuminazione, permettendo di ottenere riferimenti ground truth densi mediante tecniche di interpolazione guidata. Le immagini hanno risoluzione variabile (tipicamente tra $3000 \times 4000$ e $4000 \times 6000$ pixel) e coprono una vasta gamma di scenari indoor e outdoor con diverse combinazioni di luce naturale, artificiale e mista. La metodologia di annotazione, basata su segmentazione semi-automatica e validazione manuale delle regioni di influenza degli illuminanti, garantisce ground truth affidabili anche in zone di transizione complesse tra diverse sorgenti luminose.
 
-%TODO: Assenza di dataset video spatially varing
+\clearpage
+\input{tables/algorithms.tex}
+
+\vspace{1.5cm}
+
+\input{tables/datasets.tex}
+
+\subsection{L'Assenza di Dataset Video Multi-Illuminante}
+
+Nonostante la ricchezza di dataset disponibili per immagini statiche, allo stato attuale non esistono dataset pubblici di sequenze video annotate con ground truth denso per illuminazione spatialmente variabile. Questa lacuna rappresenta un ostacolo significativo per lo sviluppo e la valutazione di algoritmi di color constancy applicati a scenari video realistici, dove l'illuminazione può variare sia nello spazio che nel tempo.
+
+Le ragioni di questa assenza sono principalmente di natura pratica. L'annotazione frame-by-frame di sequenze video richiederebbe il posizionamento di color checker visibili e stabili in ogni frame, con la conseguente necessità di processare manualmente centinaia o migliaia di frame per ottenere ground truth affidabili. Il costo temporale ed economico di tale processo risulta proibitivo, specialmente per scenari con illuminazione multipla dove ogni frame richiederebbe la segmentazione e l'annotazione di diverse regioni di influenza. Inoltre, la presenza di movimento di camera, occlusioni dinamiche e variazioni temporali dell'illuminazione introduce ulteriori complessità metodologiche che rendono l'acquisizione diretta estremamente difficoltosa.
+
+Questo gap metodologico motiva l'approccio adottato nel presente lavoro: sfruttando le annotazioni dense per-pixel disponibili in LSMI, è possibile generare sequenze video artificiali che mantengono ground truth accurati per ogni frame, permettendo la valutazione sistematica di metodi di stima locale e temporalmente coerente dell'illuminante senza i vincoli proibitivi dell'acquisizione e annotazione manuale.

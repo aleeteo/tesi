@@ -4,7 +4,6 @@
 
 
 \input{preamble.tex}
-%TODO: rimuovere numero di pagina sulle pagine vuote
 
 \begin{document}
   \frontmatter
@@ -15,9 +14,13 @@
   \mainmatter
   \include{sections/intro}
   \include{sections/soa}
-  \include{sections/methods}
+  \include{sections/dataset_generation}
+  \include{sections/illuminant_estimation}
   \include{sections/testing}
   \include{sections/conclusions}
+
+  \appendix
+  \include{sections/appendix_params}
 
   \backmatter
   \include{sections/backmatter}
