@@ -1,25 +1,60 @@
-\begin{table}[ht]
+% Tabella 3.1a - Caratteristiche Principali
+\begin{table}[htbp]
 \centering
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{l|llllllllll}
+\caption{Caratteristiche principali degli algoritmi di stima dell'illuminante}
+\label{tab:algorithms}
+\footnotesize
+\begin{tabularx}{\textwidth}{lccccXl}
 \toprule
-algorithms & image/video & spatial/illuminant type & traditional/ml & colorspace & requested inputs & average performance & time/complexity & assumtions & extensions/variants & reference \\
+\textbf{Algoritmo} & \textbf{Tipo} & \textbf{Illum.} & \textbf{Categ.} & \textbf{Space} & \textbf{Perf.} & \textbf{Ref.} \\
 \midrule
-Gray World & immjgine & globale & tradizionale & RGB & nessuno & media & bassa & assume che il colore medio sia grigio & Gray Edge et al. & \cite{zapryanov_automatic_2012}\\
-AGWM & immagine & globale & tradizionale & RGB & nessuno & media & bassa & esclude pixel altamente cromatici prima di media RGB & versioni local, scelta automatica soglia & \cite{weng_novel_2005} \\
-White Patch & immagine & globale & tradizionale & RGB & nessuno & buona se presente bianco & bassa & assume che il pixel più brillante sia bianco & filtri anti-rumore & \cite{zapryanov_automatic_2012} \\
-Gray Edge & immagine & globale & tradizionale & RGB & derivate immagine & buona & media & assume che la media dei gradienti RGB sia grigia & ordini derivata/pesi & \cite{van_de_weijer_edge-based_2007} \\
-Shades of Gray & immagine & globale & tradizionale & RGB & parametro p & buona & media & estensione di GW con norma Lp & tuning parametro & \cite{zapryanov_automatic_2012} \\
-Greyness-Based Weighted Average & immagine & globale & tradizionale & YCbCr & nessuno & alta & medio-bassa & pixel grigi stimano l’illuminante; pesatura esponenziale su Cb+Cr & downsampling/Minkowski & \cite{thai_fast_2016} \\
-GCP-AWB & immagine & local & tradizionale & YUV & nessuno & buona & bassa & assume presenza di punti grigi con deviazione minima in U,V; stima tramite soglia e media & soglia adattiva; supporto temporale & \cite{huo_robust_2006} \\
-\hline \\
-FFCC & immagine & globale & ibrido & log-chroma (UV) & nessuno & altissima & molto bassa & stima su torus log-chroma con FFT, de-aliasing per accuratezza & canali ausiliari; smoothing temporale; IFFCC & \cite{barron_fast_2017} \\
-IFFCC & video & spatially varying & ibrido & log-chroma (UV) & nessuno & altissima & molto bassa & assume che il log-chroma descriva l’illuminazione locale, sfrutta istogrammi FFT & estensione FFCC; guided filtering; finestra regolabile & \cite{wei_integral_2025} \\
-KNN-WB & immagine & globale & ML & sRGB & grande dataset immagini sRGB corrette & media & media & inferisce WB da immagini simili via KNN + mapping & precursore di Deep WB; può essere accelerato & \cite{afifi_deep_2020} \\
-Deep WB & immagine & globale & deep learning & sRGB & nessuno & alta & medio-alta & encoder-decoder DNN per AWB + editing indoor/outdoor & precursore metodo 2022 con mappe locali & \cite{afifi_deep_2020} \\
-Deep WB Blending & immagine+video & spatially varying & deep learning & sRGB & immagini multiple con preset WB & alta & alta & evita stima illuminante, fonde immagini con diversi WB tramite DNN & emulazione post-capture; preset variabili; ISP integrato & \cite{afifi_auto_2022} \\
+\multicolumn{7}{l}{\textit{Metodi Tradizionali}} \\
+\midrule
+Gray World & img & glob. & trad. & RGB & media & \cite{zapryanov_automatic_2012} \\
+AGWM & img & glob. & trad. & RGB & media & \cite{weng_novel_2005} \\
+White Patch & img & glob. & trad. & RGB & buona* & \cite{zapryanov_automatic_2012} \\
+Gray Edge & img & glob. & trad. & RGB & buona & \cite{van_de_weijer_edge-based_2007} \\
+Shades of Gray & img & glob. & trad. & RGB & buona & \cite{zapryanov_automatic_2012} \\
+Greyness WA & img & glob. & trad. & YCbCr & alta & \cite{thai_fast_2016} \\
+GCP-AWB & img & local & trad. & YUV & buona & \cite{huo_robust_2006} \\
+\midrule
+\multicolumn{7}{l}{\textit{Metodi Avanzati e Machine Learning}} \\
+\midrule
+FFCC & img & glob. & ibr. & log-chr. & altiss. & \cite{barron_fast_2017} \\
+IFFCC & video & spat.v. & ibr. & log-chr. & altiss. & \cite{wei_integral_2025} \\
+KNN-WB & img & glob. & ML & sRGB & media & \cite{afifi_deep_2020} \\
+Deep WB & img & glob. & DL & sRGB & alta & \cite{afifi_deep_2020} \\
+Deep WB Blend. & img+vid & spat.v. & DL & sRGB & alta & \cite{afifi_auto_2022} \\
 \bottomrule
-\end{tabular}
-}
-\caption{Tabella riassuntiva degli algoritmi descritti}
+\end{tabularx}
+\end{table}
+
+% Tabella 3.1b - Dettagli Implementativi
+\begin{table}[htbp]
+\centering
+\caption{Dettagli implementativi degli algoritmi (continua dalla Tabella \ref{tab:algorithms})}
+\footnotesize
+\begin{tabularx}{\textwidth}{l>{\raggedright\arraybackslash}Xl>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Algoritmo} & \textbf{Assunzioni Principali} & \textbf{Compl.} & \textbf{Input Richiesti} & \textbf{Estensioni} \\
+\midrule
+\multicolumn{5}{l}{\textit{Metodi Tradizionali}} \\
+\midrule
+Gray World & Colore medio grigio & bassa & nessuno & Gray Edge et al. \\
+AGWM & Esclude pixel saturi & bassa & nessuno & versioni local \\
+White Patch & Pixel più luminoso bianco & bassa & nessuno & filtri anti-rumore \\
+Gray Edge & Media gradienti grigia & media & derivate & ordini/pesi \\
+Shades of Gray & Estens. GW con $L^p$ & media & parametro $p$ & tuning $p$ \\
+Greyness WA & Pixel grigi pesati Cb+Cr & medio-bassa & nessuno & downsampling \\
+GCP-AWB & Punti grigi dev. min. U,V & bassa & nessuno & soglia adatt. \\
+\midrule
+\multicolumn{5}{l}{\textit{Metodi Avanzati e Machine Learning}} \\
+\midrule
+FFCC & Stima torus log-chroma FFT & molto bassa & nessuno & smooth. temp. \\
+IFFCC & Log-chroma illum. locale & molto bassa & nessuno & guided filt. \\
+KNN-WB & Inferisce WB da simili KNN & media & dataset sRGB & accelerabile \\
+Deep WB & Encoder-decoder DNN AWB & medio-alta & nessuno & edit in/out \\
+Deep WB Blend. & Fonde img diversi WB DNN & alta & preset WB & preset var. \\
+\bottomrule
+\end{tabularx}
 \end{table}
